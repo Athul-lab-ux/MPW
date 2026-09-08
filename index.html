@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MPW — Multipurpose Work & Study Ecosystem</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'var(--primary-color)',
+                        secondary: 'var(--secondary-color)',
+                        tertiary: 'var(--tertiary-color)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col antialiased selection:bg-orange-500 selection:text-white pb-16 md:pb-0">
+
+    <!-- ========================================== -->
+    <!-- W1: AUTHENTICATION MODAL -->
+    <!-- ========================================== -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-orange-500/30 mb-3">
+                    <span class="text-2xl font-black text-white tracking-wider">MPW</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Multipurpose Work</h2>
+                <p class="text-xs text-slate-400 mt-1">14 DSA Core Algorithms • Academic Study Suite</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex border-b border-slate-700 mb-6 text-sm font-semibold">
+                <button id="authLoginTab" onclick="window.appController.switchAuthTab('login')" class="flex-1 py-2.5 border-b-2 border-orange-500 text-orange-500 transition-colors">
+                    Sign In
+                </button>
+                <button id="authRegisterTab" onclick="window.appController.switchAuthTab('register')" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-white transition-colors">
+                    New? Register
+                </button>
+            </div>
+
+            <!-- Login Form (Accepts User ID e.g. MCP-user-000001 OR Email) -->
+            <form id="loginFormContainer" onsubmit="window.appController.handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">User ID or Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-id-badge text-sm"></i>
+                        </span>
+                        <input type="text" id="loginIdentifier" placeholder="MCP-user-000001 or email@domain.com" required
+                            class="w-full bg-slate-800/90 border border-slate-700 rounded-xl py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </span>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required
+                            class="w-full bg-slate-800/90 border border-slate-700 rounded-xl py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors">
+                    </div>
+                </div>
+
+                <div id="loginErrorText" class="text-xs text-red-400 font-medium hidden"></div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm">
+                    Enter MPW Workspace
+                </button>
+            </form>
+
+            <!-- Registration Form -->
+            <form id="registerFormContainer" onsubmit="window.appController.handleRegisterSubmit(event)" class="space-y-3 hidden max-h-[70vh] overflow-y-auto pr-1">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+                    <input type="text" id="regName" placeholder="Alex Johnson" required
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Age</label>
+                        <input type="number" id="regAge" min="5" max="100" placeholder="20" required
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
+                        <input type="tel" id="regPhone" placeholder="9876543210" required
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+                    <input type="email" id="regEmail" placeholder="student@example.com" required
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Address <span class="text-slate-500">(Optional)</span></label>
+                    <input type="text" id="regAddress" placeholder="Campus Hall A, Room 402"
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                        <input type="password" id="regPassword" placeholder="••••••••" required
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="••••••••" required
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm mt-2">
+                    Register & Generate Permanent User ID
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5-SECOND USER ID TOAST POPUP -->
+    <!-- ========================================== -->
+    <div id="userIdToast" class="fixed bottom-6 inset-x-4 md:inset-x-auto md:right-6 md:max-w-md z-50 bg-slate-900 border-2 border-orange-500 rounded-2xl shadow-2xl p-4 hidden">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <div>
+                    <p class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Your Permanent User ID</p>
+                    <p id="toastUserIdText" class="text-lg md:text-xl font-mono font-black text-orange-400">MCP-user-000001</p>
+                </div>
+            </div>
+            <button id="copyToastIdBtn" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center space-x-1.5 transition-colors">
+                <i class="fa-regular fa-copy"></i>
+                <span>Copy</span>
+            </button>
+        </div>
+        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-3">
+            <div class="bg-orange-500 h-full animate-toast-progress"></div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- WW1: ONBOARDING MODALS -->
+    <!-- ========================================== -->
+    <!-- School Onboarding Modal -->
+    <div id="schoolOnboardingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center space-x-3 mb-4">
+                <span class="p-3 bg-blue-500/20 text-blue-400 rounded-xl text-xl"><i class="fa-solid fa-graduation-cap"></i></span>
+                <div>
+                    <h3 class="text-lg font-bold text-white">School Academic Profile</h3>
+                    <p class="text-xs text-slate-400">Select your current standard and stream</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Which Class?</label>
+                    <select id="schoolClassSelect" onchange="window.appController.handleSchoolClassChange()"
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
+                        <option value="1">Class 1</option>
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
+                        <option value="6">Class 6</option>
+                        <option value="7">Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10" selected>Class 10</option>
+                        <option value="11">Class 11 (Requires Stream)</option>
+                        <option value="12">Class 12 (Requires Stream)</option>
+                    </select>
+                </div>
+
+                <div id="schoolStreamGroup" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Select Stream</label>
+                    <select id="schoolStreamSelect" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white mb-2">
+                        <option value="Science (PCM)">Science (PCM)</option>
+                        <option value="Science (PCB)">Science (PCB)</option>
+                        <option value="Commerce">Commerce</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Humanities">Humanities</option>
+                        <option value="Psychology">Psychology</option>
+                        <option value="custom">Custom / Typable...</option>
+                    </select>
+                    <input type="text" id="schoolCustomStreamInput" placeholder="Or type your specific stream..."
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white placeholder-slate-500">
+                </div>
+
+                <button onclick="window.appController.saveSchoolOnboarding()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition-colors text-sm">
+                    Start School Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- College Onboarding Modal -->
+    <div id="collegeOnboardingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center space-x-3 mb-4">
+                <span class="p-3 bg-orange-500/20 text-orange-400 rounded-xl text-xl"><i class="fa-solid fa-university"></i></span>
+                <div>
+                    <h3 class="text-lg font-bold text-white">College Academic Profile</h3>
+                    <p class="text-xs text-slate-400">Setup branch, batch years & synchronized semester</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Branch / Degree</label>
+                    <select id="collegeBranchSelect" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white mb-2">
+                        <option value="B.Tech (Computer Science)">B.Tech (Computer Science & AI)</option>
+                        <option value="B.Tech (Electronics)">B.Tech (Electronics & Comm)</option>
+                        <option value="B.Tech (Mechanical)">B.Tech (Mechanical)</option>
+                        <option value="B.Sc (Physics/Maths)">B.Sc</option>
+                        <option value="B.Com">B.Com</option>
+                        <option value="BCA">BCA</option>
+                        <option value="B.Ed">B.Ed</option>
+                        <option value="MBA">MBA</option>
+                        <option value="custom">Custom Typable Degree...</option>
+                    </select>
+                    <input type="text" id="collegeCustomBranchInput" placeholder="Or type your exact degree..."
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-sm text-white placeholder-slate-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Batch Years (Standard 4-Year Graduation)</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="collegeBatchStart" value="2022" class="w-1/2 bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white text-center">
+                        <span class="text-slate-400 font-bold">to</span>
+                        <input type="number" id="collegeBatchEnd" value="2026" class="w-1/2 bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white text-center">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Semester</label>
+                        <select id="collegeSemSelect" onchange="window.appController.handleCollegeYearSemSync()"
+                            class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3" selected>Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Academic Year (Auto-Synced)</label>
+                        <input type="text" id="collegeYearInput" value="2nd Year" readonly
+                            class="w-full bg-slate-800/60 border border-slate-700 rounded-xl p-2.5 text-sm text-orange-400 font-bold text-center">
+                    </div>
+                </div>
+
+                <button onclick="window.appController.saveCollegeOnboarding()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition-colors text-sm">
+                    Start College Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrated 5-Year Course Modal -->
+    <div id="integratedCourseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-amber-500/80 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center">
+            <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">5-Year Course Gap Detected</h3>
+            <p class="text-sm text-slate-300 mb-6">
+                Is your degree an <strong>Integrated Dual-Degree Course</strong> (e.g., Integrated B.Tech+M.Tech / Dual MBA)?
+            </p>
+            <div class="flex space-x-3">
+                <button onclick="window.appController.handleIntegratedChoice(true)" class="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors">
+                    Yes, Integrated Course
+                </button>
+                <button onclick="window.appController.handleIntegratedChoice(false)" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-sm transition-colors">
+                    Not Integrated
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Compatibility Prompt Modal -->
+    <div id="deviceCompatibilityModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center">
+            <h3 class="text-lg font-bold text-white mb-4">Device Compatibility Check</h3>
+            <div class="space-y-3 mb-6 text-sm text-left">
+                <div class="flex items-center space-x-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+                    <span class="text-slate-200">Optimal for <strong>Tablets, iPad, Laptop & MacBook</strong></span>
+                </div>
+                <div class="flex items-center space-x-3 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+                    <i class="fa-solid fa-circle-xmark text-red-400 text-xl"></i>
+                    <span class="text-slate-300">Not ideal for small Phone screens (limited drawing space)</span>
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="window.whiteboardStudio.launchStudio(window.whiteboardStudio.pendingLaunch.mode, window.whiteboardStudio.pendingLaunch.subjectId, window.whiteboardStudio.pendingLaunch.folderId, window.whiteboardStudio.pendingLaunch.refDoc)" class="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors">
+                    Continue
+                </button>
+                <button onclick="window.whiteboardStudio.launchStudio(window.whiteboardStudio.pendingLaunch.mode, window.whiteboardStudio.pendingLaunch.subjectId, window.whiteboardStudio.pendingLaunch.folderId, window.whiteboardStudio.pendingLaunch.refDoc)" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-sm transition-colors">
+                    Continue Anyway
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MOBILE SLIDE-OUT DRAWER MENU -->
+    <!-- ========================================== -->
+    <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden md:hidden" onclick="window.appController.toggleMobileDrawer()"></div>
+    <div id="mobileDrawer" class="fixed top-0 bottom-0 left-0 w-72 bg-slate-900 border-r border-slate-800 z-50 p-4 flex flex-col justify-between mobile-drawer-enter md:hidden">
+        <div>
+            <!-- Mobile Drawer Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-xl flex items-center justify-center font-black text-white text-sm shadow-md">
+                        M
+                    </div>
+                    <span class="font-extrabold text-base text-white tracking-tight">MPW Menu</span>
+                </div>
+                <button onclick="window.appController.toggleMobileDrawer()" class="p-1.5 text-slate-400 hover:text-white rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Student Profile Badge -->
+            <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 mb-4 flex items-center space-x-3 cursor-pointer" onclick="window.appController.openProfileDrawer(); window.appController.toggleMobileDrawer();">
+                <img id="mobileDrawerAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover border border-orange-500">
+                <div class="truncate">
+                    <h4 class="text-sm font-bold text-white truncate">Athul V.R.</h4>
+                    <p id="mobileUserAcademicBadge" class="text-[11px] text-orange-400 font-semibold truncate">B.Tech • 2nd Year</p>
+                </div>
+            </div>
+
+            <!-- Creative Studios Links -->
+            <div class="mb-4">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Creative Studios</p>
+                <div class="space-y-1 text-sm font-medium">
+                    <button onclick="window.whiteboardStudio.openStudioWithDevicePrompt('drawing', window.appController.activeSubject ? window.appController.activeSubject.id : null); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-paintbrush text-orange-400 w-4"></i>
+                        <span>Drawing Canvas</span>
+                    </button>
+                    <button onclick="window.whiteboardStudio.openStudioWithDevicePrompt('notes', window.appController.activeSubject ? window.appController.activeSubject.id : null); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-pen-nib text-blue-400 w-4"></i>
+                        <span>Notes Writing</span>
+                    </button>
+                    <button onclick="window.whiteboardStudio.launchStudio('notepad', window.appController.activeSubject ? window.appController.activeSubject.id : null); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-align-left text-emerald-400 w-4"></i>
+                        <span>Ruled Notepad (Typed)</span>
+                    </button>
+                    <button onclick="window.whiteboardStudio.launchStudio('flashcards', window.appController.activeSubject ? window.appController.activeSubject.id : null); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-layer-group text-purple-400 w-4"></i>
+                        <span>Flashcard Studio 3D</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Academic Utilities -->
+            <div>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Academic Tools</p>
+                <div class="space-y-1 text-sm font-medium">
+                    <button onclick="window.appController.openCGPACalculator(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-chart-line text-amber-400 w-4"></i>
+                        <span>CGPA / Score Predictor</span>
+                    </button>
+                    <button onclick="window.appController.openLabCodePlayground(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-terminal text-teal-400 w-4"></i>
+                        <span>Lab & Viva Code Vault</span>
+                    </button>
+                    <button onclick="document.getElementById('themeModal').classList.remove('hidden'); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-palette text-pink-400 w-4"></i>
+                        <span>3-Tier Color Engine</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="window.appController.downloadFullBackup()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Backup Workspace</span>
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- W2: MAIN APPLICATION CONTAINER -->
+    <!-- ========================================== -->
+    <div id="mainAppContainer" class="flex-1 flex flex-col hidden">
+
+        <!-- 1. TOP NAVIGATION & CONTROL BAR -->
+        <header class="h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-3 md:px-4 flex items-center justify-between sticky top-0 z-30">
+            <!-- Left: Mobile Hamburger & Brand -->
+            <div class="flex items-center space-x-3">
+                <button onclick="window.appController.toggleMobileDrawer()" class="p-2 rounded-xl text-slate-300 hover:bg-slate-800 md:hidden" title="Open Menu">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-xl flex items-center justify-center font-black text-white shadow-md text-sm">
+                        M
+                    </div>
+                    <span class="font-extrabold text-base md:text-lg text-white tracking-tight hidden sm:inline">MPW</span>
+                </div>
+
+                <!-- Session Switcher Buttons (Desktop & Mobile) -->
+                <div class="flex items-center bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+                    <button id="nav_college" onclick="window.appController.switchSession('college')" class="session-nav-btn px-2.5 md:px-3 py-1.5 rounded-lg bg-orange-500 text-white transition-colors">
+                        🎓 <span class="hidden sm:inline">College</span>
+                    </button>
+                    <button id="nav_school" onclick="window.appController.switchSession('school')" class="session-nav-btn px-2.5 md:px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-colors">
+                        🎒 <span class="hidden sm:inline">School</span>
+                    </button>
+                    <button id="nav_personal" onclick="window.appController.switchSession('personal')" class="session-nav-btn px-2.5 md:px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-colors" title="Instant direct access with zero popups">
+                        💼 <span class="hidden sm:inline">Personal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Streak, Palette, Profile Pill, Logout -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <!-- Daily Streak Badge -->
+                <div class="flex items-center space-x-1 bg-orange-500/15 border border-orange-500/30 px-2.5 py-1.5 rounded-xl text-orange-400 text-xs font-bold" title="Daily Study Streak">
+                    <span>🔥</span>
+                    <span id="headerStreakCount">5</span>
+                </div>
+
+                <!-- 3-Tier Color Customizer Trigger (Desktop) -->
+                <button onclick="document.getElementById('themeModal').classList.remove('hidden')" class="p-2 rounded-xl text-slate-300 hover:text-orange-400 hover:bg-slate-800 transition-colors hidden sm:block" title="Customize 3-Tier Theme">
+                    <i class="fa-solid fa-palette text-sm"></i>
+                </button>
+
+                <!-- Profile Pill (DP + Name + Permanent ID) -->
+                <div onclick="window.appController.openProfileDrawer()" class="flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl px-2 py-1.5 cursor-pointer transition-colors">
+                    <img id="headerUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-orange-400">
+                    <div class="text-left hidden lg:block leading-tight">
+                        <p id="headerUserName" class="text-xs font-bold text-white truncate max-w-[100px]">Athul V.R.</p>
+                        <p id="headerUserIdBadge" class="text-[10px] font-mono text-orange-400">MCP-user-000001</p>
+                    </div>
+                </div>
+
+                <!-- Logout Button -->
+                <button onclick="window.appController.logout()" class="p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors" title="Sign Out">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 2. THREE-COLUMN WORKSPACE BODY -->
+        <div class="flex-1 flex overflow-hidden">
+
+            <!-- LEFT COLUMN: Desktop Sidebar -->
+            <aside class="w-64 border-r border-slate-800 bg-slate-900/60 p-4 flex flex-col justify-between overflow-y-auto hidden md:flex">
+                <div>
+                    <!-- Student Identity Card -->
+                    <div class="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50 mb-4 flex items-center space-x-3 cursor-pointer" onclick="window.appController.openProfileDrawer()">
+                        <img id="profileSidebarAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-10 h-10 rounded-full object-cover border border-orange-500">
+                        <div class="truncate">
+                            <h4 class="text-sm font-bold text-white truncate">Athul V.R.</h4>
+                            <p id="userAcademicBadge" class="text-[11px] text-orange-400 font-semibold truncate">B.Tech • 2nd Year</p>
+                        </div>
+                    </div>
+
+                    <!-- Subjects Section -->
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            <span>Subjects</span>
+                            <span class="text-orange-400 cursor-pointer hover:underline" onclick="document.getElementById('newSubjectInput').focus()">+ New</span>
+                        </div>
+                        <ul id="sidebarSubjectList" class="space-y-1 max-h-48 overflow-y-auto pr-1"></ul>
+                    </div>
+
+                    <!-- Left-Side Studio Suite (4 Dedicated Tools) -->
+                    <div class="mb-5">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Creative Studios</p>
+                        <div class="space-y-1 text-sm font-medium">
+                            <button onclick="window.whiteboardStudio.openStudioWithDevicePrompt('drawing', window.appController.activeSubject ? window.appController.activeSubject.id : null)" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-paintbrush text-orange-400 w-4"></i>
+                                <span>Drawing Canvas</span>
+                            </button>
+                            <button onclick="window.whiteboardStudio.openStudioWithDevicePrompt('notes', window.appController.activeSubject ? window.appController.activeSubject.id : null)" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-pen-nib text-blue-400 w-4"></i>
+                                <span>Notes Writing</span>
+                            </button>
+                            <button onclick="window.whiteboardStudio.launchStudio('notepad', window.appController.activeSubject ? window.appController.activeSubject.id : null)" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-align-left text-emerald-400 w-4"></i>
+                                <span>Ruled Notepad (Typed)</span>
+                            </button>
+                            <button onclick="window.whiteboardStudio.launchStudio('flashcards', window.appController.activeSubject ? window.appController.activeSubject.id : null)" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-layer-group text-purple-400 w-4"></i>
+                                <span>Flashcard Studio 3D</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Academic Utilities -->
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Academic Tools</p>
+                        <div class="space-y-1 text-sm font-medium">
+                            <button onclick="window.appController.openCGPACalculator()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-chart-line text-amber-400 w-4"></i>
+                                <span>CGPA / Score Predictor</span>
+                            </button>
+                            <button onclick="window.appController.openLabCodePlayground()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-terminal text-teal-400 w-4"></i>
+                                <span>Lab & Viva Code Vault</span>
+                            </button>
+                            <button onclick="window.appController.showComingSoonModal('File Conversion & Editing', 'Upcoming engine will let you edit PDF, PPT, and DOCX files in-app and convert 1-to-1!')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 flex items-center justify-between transition-colors">
+                                <span class="flex items-center space-x-2.5">
+                                    <i class="fa-solid fa-arrows-rotate text-slate-400 w-4"></i>
+                                    <span>File Conversion</span>
+                                </span>
+                                <span class="text-[10px] bg-slate-800 text-orange-400 px-1.5 py-0.5 rounded">Soon</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800">
+                    <button onclick="window.appController.downloadFullBackup()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Backup Workspace</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- CENTER STAGE: Subject Cards / Workspace Canvas / Document Reader -->
+            <main class="flex-1 flex flex-col overflow-y-auto p-4 md:p-6 bg-slate-950">
+
+                <!-- Subject Cards Grid View -->
+                <div id="subjectCardsView">
+                    <!-- Top Workspace Title & Smart Lexer Input Bar -->
+                    <div class="mb-6">
+                        <h2 id="workspaceHeaderTitle" class="text-xl md:text-2xl font-black text-white">🎓 College Study Workspace</h2>
+                        <p id="workspaceSubtitle" class="text-xs md:text-sm text-slate-400 mt-0.5">B.Tech • 2nd Year • Batch 2022-2026</p>
+
+                        <!-- Smart Subject Input Form (Voice or Text) -->
+                        <div class="mt-4 p-3 md:p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-lg">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                                <div class="relative flex-1">
+                                    <input type="text" id="newSubjectInput" placeholder='Type or speak (e.g. "physics,chemistry<maths?computer science")'
+                                        class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 pl-3.5 pr-10 text-xs md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                                    <button id="voiceMicBtn" onclick="window.appController.toggleVoiceInput()" class="absolute right-3 top-2.5 text-slate-400 hover:text-orange-400" title="Speak subjects via Voice">
+                                        <i class="fa-solid fa-microphone text-base"></i>
+                                    </button>
+                                </div>
+                                <button onclick="window.appController.handleSubjectAddSubmit()" class="py-2.5 px-5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs md:text-sm shadow-md transition-colors whitespace-nowrap">
+                                    + Add Subjects
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-2 flex items-center">
+                                <i class="fa-solid fa-wand-magic-sparkles text-orange-400 mr-1.5"></i>
+                                <span><strong>Smart Lexer:</strong> Preserves <em>"computer science"</em> as 1 subject while splitting on symbols or commas.</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Grid of Colored Subject Cards -->
+                    <div id="subjectCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"></div>
+                </div>
+
+                <!-- Subject Detail Hierarchy View (Units -> Chapters -> Files) -->
+                <div id="subjectDetailView" class="hidden flex-1 flex flex-col">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <button onclick="window.appController.closeSubjectWorkspace()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <span id="detailSubjectColorDot" class="w-3.5 h-3.5 rounded-full bg-orange-500"></span>
+                            <h3 id="detailSubjectName" class="text-lg md:text-xl font-bold text-white truncate max-w-[200px] sm:max-w-md">Data Structures</h3>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="window.appController.promptAddUnit()" class="py-2 px-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs transition-colors">
+                                + Add Unit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chapter Hierarchy Container -->
+                    <div id="chapterHierarchyContainer" class="flex-1"></div>
+                </div>
+            </main>
+
+            <!-- RIGHT CONTEXT PANEL: Desktop Search, Exam Radar -->
+            <aside class="w-80 border-l border-slate-800 bg-slate-900/60 p-4 hidden lg:flex flex-col overflow-y-auto">
+                <!-- Smart Global Search Bar with Trie Auto-Complete -->
+                <div class="relative mb-6">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="globalSearchBar" placeholder="Search topics, files, units... (Ctrl+F)"
+                            class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                    </div>
+                    <!-- Dropdown Results with Breadcrumbs -->
+                    <div id="searchResultsDropdown" class="absolute left-0 right-0 top-11 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-40 max-h-72 overflow-y-auto hidden"></div>
+                </div>
+
+                <!-- Exam Countdown Radar -->
+                <div class="mb-6 p-4 bg-slate-800/80 border border-slate-700/60 rounded-xl">
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-2.5">
+                        <span class="flex items-center"><i class="fa-regular fa-clock text-orange-400 mr-1.5"></i> Exam Radar</span>
+                        <span class="text-orange-400 font-mono text-[11px]">Next: 14 Days</span>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="p-2 bg-slate-900/70 rounded-lg flex items-center justify-between">
+                            <span class="font-medium text-white truncate">Data Structures Midterm</span>
+                            <span class="text-[11px] font-bold text-red-400">14 Days</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/70 rounded-lg flex items-center justify-between">
+                            <span class="font-medium text-white truncate">Discrete Math Theory</span>
+                            <span class="text-[11px] font-bold text-yellow-400">20 Days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 14 DSA Engine Telemetry Badge -->
+                <div class="p-4 bg-gradient-to-tr from-slate-900 to-slate-800 border border-slate-700/80 rounded-xl">
+                    <div class="flex items-center space-x-2 text-xs font-bold text-white mb-2">
+                        <i class="fa-solid fa-microchip text-orange-400"></i>
+                        <span>14 DSA Telemetry HUD</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed mb-3">
+                        Trie search, N-ary file tree, Heap ranking, and DAG roadmaps are running natively in your browser.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                        <div class="p-1.5 bg-slate-950 rounded border border-slate-800 text-slate-300">Trie Nodes: <strong>342</strong></div>
+                        <div class="p-1.5 bg-slate-950 rounded border border-slate-800 text-slate-300">Heap Depth: <strong>4</strong></div>
+                        <div class="p-1.5 bg-slate-950 rounded border border-slate-800 text-slate-300">LRU Hits: <strong>94%</strong></div>
+                        <div class="p-1.5 bg-slate-950 rounded border border-slate-800 text-slate-300">DAG Order: <strong>Topological</strong></div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR (Fixed at bottom on phones) -->
+        <nav class="fixed bottom-0 inset-x-0 bg-slate-900/95 border-t border-slate-800 h-14 flex items-center justify-around z-30 md:hidden backdrop-blur-md">
+            <button onclick="window.appController.closeSubjectWorkspace()" class="flex flex-col items-center text-orange-400">
+                <i class="fa-solid fa-book-open text-base"></i>
+                <span class="text-[10px] mt-0.5 font-medium">Subjects</span>
+            </button>
+            <button onclick="window.appController.toggleMobileDrawer()" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-paintbrush text-base"></i>
+                <span class="text-[10px] mt-0.5 font-medium">Studios</span>
+            </button>
+            <button onclick="document.getElementById('mobileSearchModal').classList.remove('hidden'); document.getElementById('mobileSearchInput').focus();" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-magnifying-glass text-base"></i>
+                <span class="text-[10px] mt-0.5 font-medium">Search</span>
+            </button>
+            <button onclick="window.appController.openCGPACalculator()" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-chart-line text-base"></i>
+                <span class="text-[10px] mt-0.5 font-medium">Grades</span>
+            </button>
+            <button onclick="window.appController.openProfileDrawer()" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-user text-base"></i>
+                <span class="text-[10px] mt-0.5 font-medium">Profile</span>
+            </button>
+        </nav>
+
+        <!-- FLOATING AI STUDY COPILOT (FAB) -->
+        <button onclick="window.appController.toggleAIAssistant()" class="ai-fab-btn fixed bottom-20 md:bottom-6 right-4 md:right-6 w-12 md:w-14 h-12 md:h-14 bg-gradient-to-tr from-orange-500 to-amber-500 text-white rounded-full flex items-center justify-center text-xl md:text-2xl shadow-2xl z-40 hover:scale-110 transition-transform" title="AI Study Assistant">
+            <i class="fa-solid fa-robot"></i>
+        </button>
+
+        <!-- Expandable AI Chat Drawer -->
+        <div id="aiChatDrawer" class="fixed bottom-24 right-4 md:right-6 w-[92vw] sm:w-80 md:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-40 flex flex-col h-[450px] md:h-[480px] hidden overflow-hidden">
+            <div class="p-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <span class="w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-sparkles"></i></span>
+                    <h4 class="text-sm font-bold text-white">MPW Study Copilot</h4>
+                </div>
+                <button onclick="window.appController.toggleAIAssistant()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="aiChatMessages" class="flex-1 p-3 overflow-y-auto space-y-3">
+                <div class="bg-slate-800 text-slate-200 border border-slate-700 rounded-2xl rounded-tl-none px-4 py-2.5 text-sm max-w-[85%] shadow">
+                    <p class="font-bold text-orange-400 text-xs mb-1">🤖 MPW Assistant</p>
+                    Hello Athul! I'm synced with your subjects. Highlight any definition to generate flashcards or practice tests!
+                </div>
+            </div>
+            <div class="p-3 bg-slate-800/80 border-t border-slate-700 flex items-center space-x-2">
+                <input type="text" id="aiChatInput" placeholder="Ask questions on Stacks, Trees, or Math..." onkeydown="if(event.key==='Enter') window.appController.sendAIMessage()"
+                    class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                <button onclick="window.appController.sendAIMessage()" class="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs transition-colors">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBILE GLOBAL SEARCH MODAL -->
+    <div id="mobileSearchModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md p-4 flex flex-col hidden md:hidden">
+        <div class="flex items-center space-x-2 pb-3 border-b border-slate-800">
+            <i class="fa-solid fa-magnifying-glass text-orange-400"></i>
+            <input type="text" id="mobileSearchInput" placeholder="Search topics, files, units..." oninput="window.appController.handleGlobalSearch(this.value)"
+                class="flex-1 bg-transparent border-0 text-white placeholder-slate-500 text-sm focus:outline-none">
+            <button onclick="document.getElementById('mobileSearchModal').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div id="mobileSearchResultsContainer" class="flex-1 overflow-y-auto mt-3"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- IN-APP DOCUMENT READER & STUDY STUDIO MODAL -->
+    <!-- ========================================== -->
+    <div id="documentReaderModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-2 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-5xl h-[92vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+            <!-- Reader Header -->
+            <div class="p-3 md:p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+                <div class="truncate max-w-[200px] sm:max-w-md">
+                    <h3 id="docReaderTitle" class="text-sm md:text-base font-bold text-white truncate">Document Reader</h3>
+                    <p id="docReaderBreadcrumb" class="text-[11px] text-orange-400 font-mono truncate">Breadcrumb path</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span id="docReaderPages" class="text-xs text-slate-400 bg-slate-700/60 px-2 py-1 rounded font-mono">Page 1 of 18</span>
+                    <button onclick="window.appController.closeDocumentReader()" class="p-2 text-slate-400 hover:text-white rounded-lg">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Annotation Toolbar -->
+            <div class="px-3 md:px-4 py-2 bg-slate-800/60 border-b border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-slate-400 font-medium">Highlight:</span>
+                    <button onclick="window.appController.highlightSelectedText('hl-yellow')" class="w-5 h-5 rounded-full bg-yellow-400 border border-white/20"></button>
+                    <button onclick="window.appController.highlightSelectedText('hl-green')" class="w-5 h-5 rounded-full bg-emerald-400 border border-white/20"></button>
+                    <button onclick="window.appController.highlightSelectedText('hl-pink')" class="w-5 h-5 rounded-full bg-pink-400 border border-white/20"></button>
+                    <button onclick="window.appController.highlightSelectedText('hl-cyan')" class="w-5 h-5 rounded-full bg-cyan-400 border border-white/20"></button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="window.appController.createFlashcardFromSelection()" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white rounded-lg font-semibold transition-colors">
+                        <i class="fa-solid fa-layer-group mr-1"></i> Make Flashcard
+                    </button>
+                    <button onclick="window.appController.generateQuizFromHighlights()" class="px-2.5 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg font-semibold transition-colors">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Generate Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Document Body Canvas -->
+            <div id="docReaderBody" class="flex-1 p-4 md:p-8 overflow-y-auto bg-slate-950 font-sans"></div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- WHITEBOARD & CREATIVE STUDIO FULLSCREEN MODAL -->
+    <!-- ========================================== -->
+    <div id="studioModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-1 md:p-2 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full h-full rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+            <!-- Studio Header -->
+            <div class="p-2.5 md:p-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2 md:space-x-3">
+                    <h3 id="studioTitle" class="text-xs md:text-base font-bold text-white truncate max-w-[140px] sm:max-w-none flex items-center">Freeform Drawing</h3>
+                    <!-- Multi-Page Controls (+ / -) -->
+                    <div class="flex items-center space-x-1 bg-slate-700/80 px-1.5 py-0.5 rounded-lg">
+                        <button onclick="window.whiteboardStudio.decrementPage()" class="text-slate-300 hover:text-white p-1"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                        <span id="pageIndicatorText" class="text-[11px] font-mono font-bold text-orange-400 px-1">Page 1</span>
+                        <button onclick="window.whiteboardStudio.addPage()" class="text-slate-300 hover:text-white p-1"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                    </div>
+                </div>
+
+                <!-- Action Tools -->
+                <div class="flex items-center space-x-2">
+                    <button id="paperToggleBtn" onclick="window.whiteboardStudio.togglePaperStyle()" class="text-[11px] bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-lg text-slate-200 hidden">
+                        Ruled Paper
+                    </button>
+                    <button onclick="window.whiteboardStudio.saveToCurrentFolder()" class="text-[11px] bg-orange-500 hover:bg-orange-600 text-white font-bold px-2.5 py-1 rounded-lg shadow">
+                        Save
+                    </button>
+                    <!-- Top-Right Cross Button to Exit -->
+                    <button onclick="window.whiteboardStudio.closeStudio()" class="p-1.5 text-slate-400 hover:text-white rounded-lg">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drawing Toolbar (Pen, Eraser, Special Lasso Erase, Colors) -->
+            <div id="drawToolbar" class="px-2 md:px-4 py-1.5 bg-slate-800/50 border-b border-slate-700 flex items-center justify-between text-xs overflow-x-auto whitespace-nowrap">
+                <div class="flex items-center space-x-1.5">
+                    <button id="tool_pen" onclick="window.whiteboardStudio.setTool('pen')" class="draw-tool-btn px-2 py-1 rounded bg-orange-500 text-white font-semibold">
+                        <i class="fa-solid fa-pen mr-1"></i> Pen
+                    </button>
+                    <button id="tool_eraser" onclick="window.whiteboardStudio.setTool('eraser')" class="draw-tool-btn px-2 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600">
+                        <i class="fa-solid fa-eraser mr-1"></i> Eraser
+                    </button>
+                    <!-- Special Lasso / Circle Erase Tool -->
+                    <button id="tool_lasso" onclick="window.whiteboardStudio.setTool('lasso')" class="draw-tool-btn px-2 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600" title="Draw loop to auto-erase enclosed part">
+                        <i class="fa-solid fa-rotate-right mr-1 text-orange-400"></i> Lasso
+                    </button>
+                    <button onclick="window.whiteboardStudio.clearCanvas()" class="px-2 py-1 rounded bg-slate-700 text-red-400 hover:bg-red-500 hover:text-white">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2 pl-3">
+                    <div class="flex items-center space-x-1">
+                        <button onclick="window.whiteboardStudio.setColor('#000000')" class="w-4 h-4 rounded-full bg-black border border-white/20"></button>
+                        <button onclick="window.whiteboardStudio.setColor('#2563EB')" class="w-4 h-4 rounded-full bg-blue-600 border border-white/20"></button>
+                        <button onclick="window.whiteboardStudio.setColor('#DC2626')" class="w-4 h-4 rounded-full bg-red-600 border border-white/20"></button>
+                        <button onclick="window.whiteboardStudio.setColor('#059669')" class="w-4 h-4 rounded-full bg-emerald-600 border border-white/20"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Studio Workspace with Split-Screen Transparent Reference Doc -->
+            <div class="flex-1 flex overflow-hidden relative">
+
+                <!-- Split Reference Doc Dock on Left (Opacity Slider & Eye Toggle) -->
+                <div id="splitDocDock" class="w-72 md:w-80 border-r border-slate-700 bg-slate-900/90 flex flex-col split-doc-panel hidden">
+                    <div class="p-2 bg-slate-800 border-b border-slate-700 flex items-center justify-between text-xs">
+                        <span id="splitDocTitle" class="font-bold text-white truncate max-w-[120px]">Reference Doc</span>
+                        <div class="flex items-center space-x-1.5">
+                            <input type="range" min="0.1" max="1.0" step="0.05" value="0.85" oninput="window.whiteboardStudio.setDocOpacity(this.value)" class="w-14 accent-orange-500">
+                            <button id="docEyeBtn" onclick="window.whiteboardStudio.toggleDocVisibility()" class="p-1 text-slate-300">
+                                <i class="fa-solid fa-eye text-orange-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="splitDocContent" class="flex-1 p-3 overflow-y-auto text-xs text-slate-300 leading-relaxed"></div>
+                </div>
+
+                <!-- Canvas Workspace (Drawing & Notes) -->
+                <div id="canvasWorkspace" class="flex-1 overflow-auto flex items-center justify-center p-2 md:p-4 bg-slate-950">
+                    <canvas id="studioCanvas" class="shadow-2xl rounded-xl cursor-crosshair max-w-full"></canvas>
+                </div>
+
+                <!-- Digital Ruled Typed Notepad Workspace (Strictly Keyboard Typed Line-by-Line) -->
+                <div id="typedNotepadWorkspace" class="flex-1 overflow-auto p-3 md:p-6 bg-slate-950 flex justify-center hidden">
+                    <div class="w-full max-w-3xl min-h-[80vh] ruled-paper rounded-xl shadow-2xl">
+                        <textarea id="ruledNotepadInput" placeholder="Start typing line by line on the ruled sheet..."
+                            class="w-full h-full bg-transparent border-0 resize-none focus:outline-none font-mono text-slate-800 leading-[32px] md:leading-[32px] text-sm md:text-base"></textarea>
+                    </div>
+                </div>
+
+                <!-- Flashcard 3D Studio Workspace -->
+                <div id="flashcardWorkspace" class="flex-1 flex flex-col items-center justify-center p-4 bg-slate-950 hidden">
+                    <div class="w-full max-w-md perspective-1000">
+                        <div id="flashcardInner" onclick="window.whiteboardStudio.flipCard()"
+                            class="w-full h-64 md:h-72 bg-gradient-to-tr from-slate-900 to-slate-800 border-2 border-orange-500/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl cursor-pointer transform-style-3d transition-transform duration-500 relative">
+                            <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+                                <span id="flashcardCounter">Card 1 of 3</span>
+                                <span><i class="fa-solid fa-hand-pointer mr-1"></i> Tap to flip</span>
+                            </div>
+                            <div class="my-auto text-center">
+                                <p id="cardFrontText" class="text-lg md:text-xl font-bold text-white leading-relaxed">Front Question</p>
+                                <p id="cardBackText" class="text-sm md:text-base text-orange-400 font-medium mt-3">Back Answer</p>
+                            </div>
+                            <div class="text-center text-[10px] text-slate-500 font-semibold">
+                                Spaced Repetition (Min-Heap Scheduled)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Navigation Buttons -->
+                    <div class="flex items-center space-x-3 mt-5">
+                        <button onclick="window.whiteboardStudio.prevCard()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl shadow">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="window.whiteboardStudio.flipCard()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow">
+                            Flip Card
+                        </button>
+                        <button onclick="window.whiteboardStudio.nextCard()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl shadow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3-TIER COLOR CUSTOMIZER MODAL -->
+    <div id="themeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-palette text-orange-400 mr-2"></i> 3-Tier Color Engine</h3>
+                <button onclick="document.getElementById('themeModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-slate-800/80 rounded-xl">
+                    <span class="text-xs md:text-sm font-semibold text-slate-200">1. Primary Color (White default)</span>
+                    <input type="color" id="primaryColorPicker" value="#FFFFFF" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-800/80 rounded-xl">
+                    <span class="text-xs md:text-sm font-semibold text-slate-200">2. Secondary Color (Orange default)</span>
+                    <input type="color" id="secondaryColorPicker" value="#F97316" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-800/80 rounded-xl">
+                    <span class="text-xs md:text-sm font-semibold text-slate-200">3. Tertiary Color (Blue default)</span>
+                    <input type="color" id="tertiaryColorPicker" value="#1E3A8A" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Designer Presets</p>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <button onclick="window.appController.setThemePreset('#FFFFFF', '#F97316', '#1E3A8A')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 text-white font-medium border border-orange-500">
+                            White/Orange/Blue
+                        </button>
+                        <button onclick="window.appController.setThemePreset('#FFFFFF', '#10B981', '#064E3B')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 font-medium">
+                            Emerald Study
+                        </button>
+                        <button onclick="window.appController.setThemePreset('#FFFFFF', '#8B5CF6', '#312E81')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 text-purple-400 font-medium">
+                            Cyber Purple
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="window.appController.saveCustomTheme()" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors mt-2">
+                    Save Theme Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- W3 PROFILE DRAWER MODAL -->
+    <div id="profileDrawerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white">Customizable Profile (W3)</h3>
+                <button onclick="document.getElementById('profileDrawerModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Profile Picture Upload -->
+            <div class="flex flex-col items-center mb-4">
+                <div class="relative group cursor-pointer" onclick="document.getElementById('dpFileInput').click()">
+                    <img id="profileDrawerAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-full object-cover border-2 border-orange-500 shadow-lg">
+                    <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-camera text-white"></i>
+                    </div>
+                </div>
+                <input type="file" id="dpFileInput" accept="image/*" class="hidden" onchange="window.appController.handleAvatarUpload(event)">
+                <p class="text-xs text-slate-400 mt-2">Tap photo to upload from Laptop or Phone Gallery</p>
+                <div class="flex items-center space-x-3 mt-2 text-xs">
+                    <span id="profileDrawerUserId" class="font-mono text-orange-400 font-bold">MCP-user-000001</span>
+                    <span class="text-slate-500">•</span>
+                    <span id="profileDrawerStreak" class="text-orange-400 font-bold">🔥 5 Days</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+                    <input type="text" id="profileDrawerName" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Email</label>
+                    <input type="email" id="profileDrawerEmail" readonly class="w-full bg-slate-800/60 border border-slate-700 rounded-lg p-2 text-sm text-slate-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Phone</label>
+                    <input type="tel" id="profileDrawerPhone" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Address</label>
+                    <input type="text" id="profileDrawerAddress" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
+                </div>
+
+                <button onclick="window.appController.saveProfileDrawerChanges()" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors mt-2">
+                    Save Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CGPA & TARGET SCORE PREDICTOR MODAL -->
+    <div id="cgpaModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl p-5 md:p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base md:text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-line text-orange-400 mr-2"></i> CGPA & Credit Matrix Optimizer</h3>
+                    <p class="text-xs text-slate-400">Weighted grade points powered by Dynamic Programming</p>
+                </div>
+                <button onclick="document.getElementById('cgpaModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="p-3 md:p-4 bg-slate-800/80 rounded-xl mb-4 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] text-slate-400 font-semibold uppercase">Current Score / CGPA</p>
+                    <h2 id="cgpaScoreDisplay" class="text-2xl md:text-3xl font-black text-orange-400">9.20</h2>
+                </div>
+                <div class="text-right">
+                    <p class="text-[11px] text-slate-400 font-semibold uppercase">Target</p>
+                    <p class="text-lg md:text-xl font-bold text-emerald-400">9.50 Goal</p>
+                </div>
+            </div>
+
+            <div class="max-h-60 overflow-y-auto">
+                <table class="w-full text-left">
+                    <thead class="text-[11px] uppercase text-slate-400 border-b border-slate-700">
+                        <tr>
+                            <th class="py-2 px-2 md:px-3">Course</th>
+                            <th class="py-2 px-2 md:px-3">Credits</th>
+                            <th class="py-2 px-2 md:px-3">Target</th>
+                            <th class="py-2 px-2 md:px-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cgpaTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAB PLAYGROUND MODAL -->
+    <div id="labPlaygroundModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col h-[80vh]">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
+                <h3 class="text-sm md:text-base font-bold text-white flex items-center"><i class="fa-solid fa-terminal text-teal-400 mr-2"></i> Lab Manual & Viva Code Vault</h3>
+                <button onclick="document.getElementById('labPlaygroundModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <textarea id="playgroundCodeInput" class="flex-1 bg-slate-950 font-mono text-xs text-emerald-400 p-3 md:p-4 rounded-xl border border-slate-800 resize-none focus:outline-none">
+// C++ / Python Inorder Traversal for Lab Viva
+#include <iostream>
+using namespace std;
+
+struct Node {
+    int val;
+    Node* left;
+    Node* right;
+    Node(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+void inorder(Node* root) {
+    if (!root) return;
+    inorder(root->left);
+    cout << root->val << " ";
+    inorder(root->right);
+}
+</textarea>
+            <div class="flex items-center justify-between mt-3">
+                <button onclick="window.appController.runPlaygroundCode()" class="py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl text-xs transition-colors">
+                    <i class="fa-solid fa-play mr-1"></i> Run Viva Simulation
+                </button>
+            </div>
+            <pre id="playgroundOutputConsole" class="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-400 h-24 overflow-y-auto"></pre>
+        </div>
+    </div>
+
+    <!-- PRACTICE QUIZ MODAL -->
+    <div id="quizModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-2xl p-5 md:p-6 shadow-2xl max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
+                <h3 class="text-sm md:text-base font-bold text-white flex items-center"><i class="fa-solid fa-wand-magic-sparkles text-orange-400 mr-2"></i> Generated Chapter Quiz</h3>
+                <button onclick="document.getElementById('quizModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="quizQuestionsContainer" class="flex-1 overflow-y-auto pr-1"></div>
+            <button onclick="window.appController.submitQuizAnswers()" class="w-full mt-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors">
+                Submit Answers & Check Score
+            </button>
+        </div>
+    </div>
+
+    <!-- COMING SOON MODAL -->
+    <div id="comingSoonModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center">
+            <div class="w-14 h-14 bg-orange-500/20 text-orange-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <h3 id="comingSoonTitle" class="text-xl font-bold text-white mb-2">Feature Preview</h3>
+            <p id="comingSoonDesc" class="text-sm text-slate-300 mb-6 leading-relaxed">This feature is currently under active development.</p>
+            <button onclick="document.getElementById('comingSoonModal').classList.add('hidden')" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors">
+                Got it
+            </button>
+        </div>
+    </div>
+
+    <!-- GLOBAL TOAST NOTIFICATION -->
+    <div id="globalToastNotification" class="fixed top-6 right-4 md:right-6 z-50 bg-slate-900 border border-orange-500/80 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 hidden">
+        <i class="fa-solid fa-circle-check text-orange-400 text-base"></i>
+        <span id="globalToastText" class="text-xs md:text-sm font-medium">Notification</span>
+    </div>
+
+    <!-- Hidden File Upload Inputs -->
+    <input type="file" id="fileUploadInput" class="hidden" onchange="window.appController.handleFileUpload(event)">
+    <input type="file" id="restoreBackupInput" accept=".json" class="hidden" onchange="window.appController.restoreBackupFromFile(event)">
+
+    <!-- Application JavaScript Scripts -->
+    <script src="js/dsa_engine.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/whiteboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
