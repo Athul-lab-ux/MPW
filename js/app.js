@@ -1982,9 +1982,6 @@ Rules:
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 this.toggleCommandPalette();
-            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
-                e.preventDefault();
-                this.toggleAIAssistant();
             } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
                 e.preventDefault();
                 this.togglePomodoroModal();
@@ -2020,8 +2017,6 @@ Rules:
             { icon: 'fa-solid fa-briefcase', text: 'Switch to Personal Workspace', action: () => this.switchSession('personal'), tag: 'Session' },
             { icon: 'fa-solid fa-stopwatch', text: 'Open Pomodoro Focus Timer & Soundscapes', action: () => this.togglePomodoroModal(), tag: 'Focus' },
             { icon: 'fa-solid fa-code', text: 'Open Code & Formula Reference Vault', action: () => this.openCodeVaultModal(), tag: 'Tools' },
-            { icon: 'fa-solid fa-robot', text: 'Open MPW AI Study Assistant', action: () => this.toggleAIAssistant(), tag: 'AI' },
-            { icon: 'fa-solid fa-key', text: 'Google Gemini API Settings', action: () => this.openGeminiSettings(), tag: 'AI' },
             { icon: 'fa-solid fa-layer-group', text: 'Open Spaced Repetition Flashcards', action: () => window.whiteboardStudio?.launchStudio('flashcards', this.activeSubject?.id), tag: 'Studio' },
             { icon: 'fa-solid fa-pen-nib', text: 'Open Freeform Drawing Canvas', action: () => window.whiteboardStudio?.openStudioWithDevicePrompt('drawing', this.activeSubject?.id), tag: 'Studio' },
             { icon: 'fa-solid fa-file-pen', text: 'Open Ruled Handwritten Notes', action: () => window.whiteboardStudio?.openStudioWithDevicePrompt('notes', this.activeSubject?.id), tag: 'Studio' },

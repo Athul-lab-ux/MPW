@@ -163,15 +163,6 @@ body {
         font-size: 1.25rem !important;
     }
 
-    #aiChatDrawer {
-        bottom: 135px !important;
-        right: 12px !important;
-        left: 12px !important;
-        width: auto !important;
-        max-width: none !important;
-        height: 390px !important;
-    }
-
     /* Fullscreen on mobile modals */
     #studioModal > div,
     #documentReaderModal > div {
