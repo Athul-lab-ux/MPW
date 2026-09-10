@@ -22,6 +22,9 @@ class AppController {
         this.activeChapter = null;
         this.activeFile = null;
 
+        // Natural Sorting Criteria ('number', 'name', 'starred', 'recent')
+        this.currentSortCriteria = 'number';
+
         // Search engine Trie
         this.searchTrie = new window.DSA.Trie();
 
@@ -31,6 +34,29 @@ class AppController {
 
         // In-app Document Viewer Annotations
         this.activeAnnotations = [];
+
+        // Pomodoro State
+        this.pomodoroTimer = null;
+        this.pomodoroSeconds = 25 * 60;
+        this.pomodoroMode = 'focus'; // 'focus', 'short', 'long'
+        this.pomodoroRunning = false;
+
+        // Ambient Soundscape Web Audio
+        this.audioCtx = null;
+        this.activeSoundNode = null;
+        this.activeSoundType = null;
+
+        // Active AI Context
+        this.isAIMicListening = false;
+        this.aiRecognition = null;
+        this.currentSummaryText = '';
+
+        // Audio Memo Recorder
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.isRecordingVoiceMemo = false;
+        this.activeMemoSubjectId = null;
+        this.activeMemoUnitId = null;
     }
 
     init() {
@@ -43,7 +69,16 @@ class AppController {
         // 3. Setup Voice Recognition
         this.initSpeechRecognition();
 
-        // 4. Bind Global Events
+        // 4. Setup Command Palette Keyboard Shortcuts (Ctrl+K)
+        this.initKeyboardShortcuts();
+
+        // 5. Setup Drag and Drop Listeners
+        this.initDragAndDrop();
+
+        // 6. Update AI Model Badge
+        this.updateAIModelBadge();
+
+        // 7. Bind Global Events
         this.bindEvents();
     }
 
@@ -100,6 +135,48 @@ class AppController {
             mainApp.classList.remove('hidden');
             this.updateHeaderUserProfile(user);
             this.handleSessionLaunch(this.currentSession);
+        }
+    }
+
+    fillDemoAccount() {
+        this.switchAuthTab('login');
+        const idInput = document.getElementById('loginIdentifier');
+        const passInput = document.getElementById('loginPassword');
+        if (idInput) idInput.value = 'MCP-user-000001';
+        if (passInput) passInput.value = 'password123';
+        this.showToast('⚡ Pre-filled demo credentials. Click Enter to sign in!');
+    }
+
+    togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        } else {
+            input.type = 'password';
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    }
+
+    checkPasswordStrength(password) {
+        const res = window.authManager.calculatePasswordStrength(password);
+        const bar = document.getElementById('passwordStrengthBar');
+        const label = document.getElementById('passwordStrengthLabel');
+        if (bar) {
+            bar.style.width = res.width;
+            bar.className = `h-full ${res.color} password-strength-bar`;
+        }
+        if (label) {
+            label.textContent = res.label;
+            label.className = `font-bold ${res.color.replace('bg-', 'text-')}`;
         }
     }
 
@@ -574,21 +651,48 @@ class AppController {
 
     renderChapterFolderHierarchy() {
         const container = document.getElementById('chapterHierarchyContainer');
+        if (!container) return;
         container.innerHTML = '';
 
         if (!this.activeSubject.units || this.activeSubject.units.length === 0) {
-            container.innerHTML = '<p class="text-slate-400 text-sm">No units created yet. Click "+ Add Unit" to start.</p>';
+            container.innerHTML = '<div class="p-8 text-center text-slate-500 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800"><i class="fa-solid fa-folder-plus text-3xl text-orange-400 mb-2"></i><p class="text-sm">No units created yet. Click "+ Add Unit" above to start your curriculum.</p></div>';
             return;
         }
 
-        this.activeSubject.units.forEach(unit => {
+        // Apply Natural Alphanumeric Sorting
+        const sortedUnits = window.storageManager.sortItems(this.activeSubject.units, this.currentSortCriteria || 'number');
+
+        sortedUnits.forEach(unit => {
             const unitCard = document.createElement('div');
             unitCard.className = 'mb-6 bg-slate-800/80 rounded-xl p-4 border border-slate-700/70 shadow-sm';
 
+            // Audio Memos for this unit
+            const audioMemos = window.storageManager.getAudioMemos(this.activeSubject.id, unit.id);
+            let audioMemosHtml = '';
+            if (audioMemos.length > 0) {
+                audioMemosHtml = `
+                    <div class="mt-3 p-2.5 bg-slate-900/80 rounded-lg border border-slate-700/50">
+                        <p class="text-[11px] font-bold text-orange-400 uppercase tracking-wider mb-1 flex items-center">
+                            <i class="fa-solid fa-microphone-lines mr-1.5"></i> Lecture Voice Memos (${audioMemos.length})
+                        </p>
+                        <div class="space-y-1.5">
+                            ${audioMemos.map(m => `
+                                <div class="flex items-center justify-between p-1.5 bg-slate-950 rounded border border-slate-800 text-xs">
+                                    <span class="text-slate-300 truncate max-w-[150px]"><i class="fa-solid fa-play text-orange-400 mr-1 text-[10px]"></i> ${m.title || 'Audio Note'}</span>
+                                    <audio controls src="${m.audioData}" class="h-6 w-36 sm:w-48"></audio>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
             let chaptersHtml = '';
-            unit.chapters.forEach(chap => {
+            (unit.chapters || []).forEach(chap => {
                 let filesHtml = '';
-                chap.files.forEach(file => {
+                const sortedFiles = window.storageManager.sortItems(chap.files, this.currentSortCriteria || 'number');
+
+                sortedFiles.forEach(file => {
                     const icon = file.type === 'pdf' ? 'fa-file-pdf text-red-400' :
                                 file.type === 'ppt' ? 'fa-file-powerpoint text-orange-400' :
                                 file.type === 'image' ? 'fa-file-image text-emerald-400' : 'fa-file-word text-blue-400';
@@ -603,7 +707,7 @@ class AppController {
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <button onclick="window.appController.toggleStarFile('${file.id}', event)" class="text-slate-400 hover:text-yellow-400 p-1">
+                                <button onclick="window.appController.toggleStarFile('${file.id}', event)" class="text-slate-400 hover:text-yellow-400 p-1" title="Star as Favorite">
                                     <i class="fa-${file.isStarred ? 'solid text-yellow-400' : 'regular'} fa-star"></i>
                                 </button>
                                 <button onclick="window.appController.deleteFile('${chap.id}', '${file.id}', event)" class="text-slate-400 hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -629,12 +733,22 @@ class AppController {
 
             unitCard.innerHTML = `
                 <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
-                    <h4 class="font-bold text-white text-base"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i> ${unit.name}</h4>
-                    <button onclick="window.appController.promptAddChapter('${unit.id}')" class="text-xs text-orange-400 hover:underline">
-                        + Add Chapter
-                    </button>
+                    <h4 class="font-bold text-white text-base flex items-center">
+                        <i class="fa-solid fa-layer-group text-blue-400 mr-2"></i>
+                        <span>${unit.name}</span>
+                    </h4>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="window.appController.startVoiceMemoRecording('${this.activeSubject.id}', '${unit.id}')" class="text-[11px] bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded-lg flex items-center space-x-1 transition-colors" title="Record Voice Memo">
+                            <i class="fa-solid fa-microphone text-orange-400"></i>
+                            <span>Voice Memo</span>
+                        </button>
+                        <button onclick="window.appController.promptAddChapter('${unit.id}')" class="text-xs text-orange-400 hover:underline">
+                            + Add Chapter
+                        </button>
+                    </div>
                 </div>
                 <div>${chaptersHtml}</div>
+                ${audioMemosHtml}
             `;
             container.appendChild(unitCard);
         });
@@ -866,40 +980,191 @@ class AppController {
         this.showToast('📇 Flashcard saved to subject deck!');
     }
 
-    generateQuizFromHighlights() {
-        const quizModal = document.getElementById('quizModal');
-        const quizQuestions = [
-            { q: '1. What principle does a Stack data structure adhere to?', opts: ['FIFO', 'LIFO', 'Priority-Based', 'Random Access'], ans: 1 },
-            { q: '2. In an LRU Cache, what time complexity is achieved for lookups and evictions?', opts: ['O(n)', 'O(log n)', 'O(1)', 'O(n^2)'], ans: 2 },
-            { q: '3. What guarantees that a graph can be Topologically Sorted?', opts: ['It has cycles', 'It is a Directed Acyclic Graph (DAG)', 'It is bipartite', 'It has negative weights'], ans: 1 },
-            { q: '4. What algorithm schedules spaced repetition flashcards?', opts: ['Dijkstra', 'SuperMemo / Binary Min-Heap', 'Kruskal', 'Binary Search'], ans: 1 },
-            { q: '5. Which data structure powers O(L) prefix autocomplete?', opts: ['Trie (Prefix Tree)', 'Segment Tree', 'Queue', 'Array'], ans: 0 }
-        ];
+    // ==========================================
+    // UNIT REVISION SUMMARY & STUDY CHEATSHEETS
+    // ==========================================
+    generateSubjectSummary() {
+        if (!this.activeSubject) return;
 
-        let html = '';
-        quizQuestions.forEach((item, idx) => {
-            html += `
-                <div class="p-4 bg-slate-800 rounded-xl mb-4 border border-slate-700">
-                    <p class="font-bold text-white mb-2">${item.q}</p>
-                    <div class="space-y-1.5">
-                        ${item.opts.map((opt, oIdx) => `
-                            <label class="flex items-center space-x-2 text-sm text-slate-300 cursor-pointer hover:text-orange-400">
-                                <input type="radio" name="quiz_q_${idx}" value="${oIdx}">
-                                <span>${opt}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
+        const modal = document.getElementById('unitSummaryModal');
+        const titleEl = document.getElementById('unitSummaryModalTitle');
+        const contentEl = document.getElementById('unitSummaryContent');
+
+        titleEl.textContent = `Revision Cheat Sheet: ${this.activeSubject.name}`;
+
+        let summaryText = `### 📚 ${this.activeSubject.name} — Rapid Revision Summary\n\n`;
+        let unitCount = 0;
+        let fileCount = 0;
+
+        (this.activeSubject.units || []).forEach((u) => {
+            unitCount++;
+            summaryText += `#### 📁 ${u.name}\n`;
+            (u.chapters || []).forEach(c => {
+                summaryText += `- **${c.name}:**\n`;
+                (c.files || []).forEach(f => {
+                    fileCount++;
+                    const snippet = f.content ? f.content.slice(0, 150).replace(/\n/g, ' ') + '...' : 'Lecture notes on core syllabus';
+                    summaryText += `  - *${f.name}*: ${snippet}\n`;
+                });
+            });
+            summaryText += `\n`;
         });
 
-        document.getElementById('quizQuestionsContainer').innerHTML = html;
-        quizModal.classList.remove('hidden');
+        summaryText += `\n#### 🎯 Key Exam Formulas & Takeaways:\n`;
+        summaryText += `- Review all starred (⭐) lecture summaries before testing.\n`;
+        summaryText += `- Keep active recall high with your 3D Flashcard decks.\n`;
+        summaryText += `- Total Units Reviewed: ${unitCount} | Files Indexed: ${fileCount}\n`;
+
+        this.currentSummaryText = summaryText;
+        contentEl.innerHTML = this.formatMarkdown(summaryText);
+        modal.classList.remove('hidden');
     }
 
-    submitQuizAnswers() {
-        alert('🎉 Score: 5 / 5! Excellent mastery of chapter highlights.');
-        document.getElementById('quizModal').classList.add('hidden');
+    copyUnitSummaryText() {
+        if (this.currentSummaryText) {
+            navigator.clipboard.writeText(this.currentSummaryText);
+            this.showToast('📋 Revision summary copied to clipboard!');
+        }
+    }
+
+    saveSummaryAsUnitNote() {
+        if (!this.currentSummaryText || !this.activeSubject) return;
+        if (!this.activeSubject.units || this.activeSubject.units.length === 0) {
+            this.promptAddUnit();
+        }
+        const unit = this.activeSubject.units[0];
+        if (!unit.chapters) unit.chapters = [];
+        if (unit.chapters.length === 0) {
+            unit.chapters.push({ id: 'chap_' + Date.now(), name: 'Summaries', files: [] });
+        }
+
+        const newFile = {
+            id: 'file_sum_' + Date.now(),
+            name: `${this.activeSubject.name}_Exam_CheatSheet.md`,
+            type: 'docx',
+            size: '0.8 MB',
+            pages: 2,
+            isStarred: true,
+            label: 'Summary CheatSheet',
+            content: this.currentSummaryText
+        };
+
+        unit.chapters[0].files.push(newFile);
+        this.saveActiveSubject();
+        this.renderChapterFolderHierarchy();
+        document.getElementById('unitSummaryModal').classList.add('hidden');
+        this.showToast('💾 Saved Revision CheatSheet to Unit!');
+    }
+
+    // ==========================================
+    // VOICE LECTURE MEMO RECORDER (GoodNotes / Notability)
+    // ==========================================
+    async startVoiceMemoRecording(subjectId, unitId) {
+        if (this.isRecordingVoiceMemo) {
+            // Stop recording
+            if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                this.mediaRecorder.stop();
+            }
+            this.isRecordingVoiceMemo = false;
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.audioChunks = [];
+            this.activeMemoSubjectId = subjectId;
+            this.activeMemoUnitId = unitId;
+
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) this.audioChunks.push(e.data);
+            };
+
+            this.mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Audio = reader.result;
+                    const memoTitle = prompt('Enter a title for this voice memo:', `Lecture Voice Note ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`);
+                    if (memoTitle) {
+                        window.storageManager.saveAudioMemo(this.activeMemoSubjectId, this.activeMemoUnitId, {
+                            title: memoTitle,
+                            audioData: base64Audio
+                        });
+                        this.renderChapterFolderHierarchy();
+                        this.showToast('🎙️ Audio Memo saved to unit!');
+                    }
+                };
+                reader.readAsDataURL(audioBlob);
+
+                // Stop tracks
+                stream.getTracks().forEach(t => t.stop());
+            };
+
+            this.mediaRecorder.start();
+            this.isRecordingVoiceMemo = true;
+            this.showToast('🔴 Recording Audio Memo... Click "Voice Memo" again to stop.');
+        } catch (err) {
+            alert('Could not access microphone: ' + err.message);
+        }
+    }
+
+    // ==========================================
+    // SORTING & DRAG-AND-DROP FILE VAULT
+    // ==========================================
+    changeSortCriteria(criteria) {
+        this.currentSortCriteria = criteria;
+        this.renderChapterFolderHierarchy();
+        this.showToast(`📁 Sorted by: ${criteria.toUpperCase()}`);
+    }
+
+    initDragAndDrop() {
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => e.preventDefault());
+    }
+
+    handleDragDropUpload(event) {
+        event.preventDefault();
+        const files = event.dataTransfer?.files;
+        if (!files || files.length === 0 || !this.activeSubject) return;
+
+        if (!this.activeSubject.units || this.activeSubject.units.length === 0) {
+            this.promptAddUnit();
+        }
+
+        const unit = this.activeSubject.units[0];
+        if (!unit.chapters || unit.chapters.length === 0) {
+            unit.chapters.push({ id: 'chap_' + Date.now(), name: 'Chapter 1: Uploaded Resources', files: [] });
+        }
+        const chap = unit.chapters[0];
+
+        Array.from(files).forEach(file => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            let fileType = 'pdf';
+            if (['ppt', 'pptx'].includes(ext)) fileType = 'ppt';
+            else if (['doc', 'docx'].includes(ext)) fileType = 'docx';
+            else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) fileType = 'image';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const newFileObj = {
+                    id: 'file_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                    name: file.name,
+                    type: fileType,
+                    size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
+                    pages: Math.floor(Math.random() * 15) + 3,
+                    isStarred: false,
+                    label: 'Stashed File',
+                    content: typeof e.target.result === 'string' && !e.target.result.startsWith('data:') ? e.target.result : `Document Content Preview for ${file.name}`
+                };
+                chap.files.push(newFileObj);
+                this.saveActiveSubject();
+                this.renderChapterFolderHierarchy();
+            };
+            reader.readAsText(file);
+        });
+
+        this.showToast(`📥 Saved ${files.length} file(s) into ${this.activeSubject.name}!`);
     }
 
     // ==========================================
@@ -1093,57 +1358,971 @@ class AppController {
         document.getElementById('cgpaModal').classList.remove('hidden');
     }
 
-    openLabCodePlayground() {
-        document.getElementById('labPlaygroundModal').classList.remove('hidden');
+    // ==========================================
+    // CODE & FORMULA REFERENCE VAULT
+    // ==========================================
+    openCodeVaultModal() {
+        const modal = document.getElementById('codeVaultModal');
+        if (modal) modal.classList.remove('hidden');
     }
 
-    runPlaygroundCode() {
-        const code = document.getElementById('playgroundCodeInput').value;
-        const consoleEl = document.getElementById('playgroundOutputConsole');
-        consoleEl.textContent = `Running snippet in safe sandbox...\n> Output:\nBinary Tree Inorder Traversal: [1, 2, 3, 4, 5, 6, 7]\nTime Complexity: O(n)\nMemory Allocated: 1.4 MB\nStatus: PASSED (100% Viva-Ready)`;
+    handleCodeVaultPreset(category) {
+        const input = document.getElementById('codeVaultInput');
+        if (!input) return;
+
+        const presets = {
+            cpp: `// C++ Binary Tree Traversal & STL Reference\n#include <iostream>\n#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nstruct Node {\n    int val;\n    Node* left;\n    Node* right;\n    Node(int v) : val(v), left(nullptr), right(nullptr) {}\n};\n\nvoid inorder(Node* root) {\n    if (!root) return;\n    inorder(root->left);\n    cout << root->val << " ";\n    inorder(root->right);\n}\n\nint main() {\n    Node* root = new Node(10);\n    root->left = new Node(5);\n    root->right = new Node(15);\n    inorder(root);\n    return 0;\n}`,
+            python: `# Python Graph BFS & Dijkstra Shortest Path\nfrom collections import deque\nimport heapq\n\ndef bfs(graph, start):\n    visited = set([start])\n    queue = deque([start])\n    order = []\n    while queue:\n        node = queue.popleft()\n        order.append(node)\n        for neighbor in graph.get(node, []):\n            if neighbor not in visited:\n                visited.add(neighbor)\n                queue.append(neighbor)\n    return order\n\ndef dijkstra(graph, start):\n    distances = {node: float('infinity') for node in graph}\n    distances[start] = 0\n    pq = [(0, start)]\n    while pq:\n        cur_dist, u = heapq.heappop(pq)\n        if cur_dist > distances[u]: continue\n        for v, weight in graph[u]:\n            if distances[u] + weight < distances[v]:\n                distances[v] = distances[u] + weight\n                heapq.heappush(pq, (distances[v], v))\n    return distances`,
+            java: `// Java OOP Singleton & Concurrency Template\nimport java.util.*;\nimport java.util.concurrent.*;\n\npublic class StudyVaultEngine {\n    private static volatile StudyVaultEngine instance;\n    private final Map<String, List<String>> memoryStore = new ConcurrentHashMap<>();\n\n    private StudyVaultEngine() {}\n\n    public static StudyVaultEngine getInstance() {\n        if (instance == null) {\n            synchronized (StudyVaultEngine.class) {\n                if (instance == null) {\n                    instance = new StudyVaultEngine();\n                }\n            }\n        }\n        return instance;\n    }\n}`,
+            math: `/* Mathematical Formulas & Core Theorem Cheatsheet */\n\n1. Euler's Planar Graph Formula:\n   V - E + F = 2 (Vertices - Edges + Faces)\n\n2. Bayes' Theorem of Conditional Probability:\n   P(A | B) = [ P(B | A) * P(A) ] / P(B)\n\n3. Calculus Integration by Parts:\n   ∫ u dv = u*v - ∫ v du\n\n4. Fast Fourier Transform Complexity:\n   Time: O(N log N) | Divide and conquer butterfly network\n\n5. Master Theorem for Divide-and-Conquer Recurrences:\n   T(n) = a*T(n/b) + f(n)\n   If f(n) = O(n^(log_b(a) - ε)), then T(n) = Θ(n^(log_b(a)))`,
+            sql: `-- SQL Relational Indexing & Advanced Analytical Queries\nCREATE INDEX idx_student_subject ON study_records (user_id, subject_id);\n\n-- Top Ranked Study Mastery per Unit\nSELECT subject_name, unit_name, AVG(mastery_score) as avg_mastery\nFROM student_performance\nGROUP BY subject_name, unit_name\nHAVING avg_mastery >= 85\nORDER BY avg_mastery DESC;`
+        };
+
+        if (presets[category]) {
+            input.value = presets[category];
+        }
+    }
+
+    copyCodeVaultSnippet() {
+        const input = document.getElementById('codeVaultInput');
+        if (!input) return;
+        this.copyToClipboard(input.value);
+        this.showToast('📋 Code / Formula snippet copied to clipboard!');
+    }
+
+    saveSnippetToCurrentUnit() {
+        const input = document.getElementById('codeVaultInput');
+        if (!input || !input.value.trim()) {
+            this.showToast('⚠️ No code snippet to save');
+            return;
+        }
+
+        const category = document.getElementById('codeVaultCategorySelect')?.value || 'code';
+        const extMap = { cpp: 'cpp', python: 'py', java: 'java', math: 'txt', sql: 'sql' };
+        const ext = extMap[category] || 'txt';
+
+        if (!this.activeSubject) {
+            const subjects = window.storageManager.getSubjects(this.currentSession);
+            if (subjects && subjects.length > 0) {
+                this.activeSubject = subjects[0];
+            } else {
+                this.showToast('⚠️ Create a subject first to save this snippet!');
+                return;
+            }
+        }
+
+        if (!this.activeSubject.units || this.activeSubject.units.length === 0) {
+            this.activeSubject.units = [{
+                id: 'unit_' + Date.now(),
+                name: 'Unit 1: Code & Formula Reference',
+                chapters: []
+            }];
+        }
+
+        const unit = this.activeSubject.units[0];
+        if (!unit.chapters || unit.chapters.length === 0) {
+            unit.chapters = [{
+                id: 'chap_' + Date.now(),
+                name: 'Chapter 1: Vault Snippets',
+                files: []
+            }];
+        }
+
+        const chap = unit.chapters[0];
+        const newFile = {
+            id: 'file_' + Date.now(),
+            name: `${category.toUpperCase()}_Reference_Snippet.${ext}`,
+            type: 'docx',
+            size: `${(input.value.length / 1024).toFixed(1)} KB`,
+            pages: 1,
+            isStarred: true,
+            label: 'Code Vault Snippet',
+            content: input.value
+        };
+
+        chap.files.push(newFile);
+        this.saveActiveSubject();
+        this.renderChapterFolderHierarchy();
+        this.showToast(`💾 Snippet saved to ${this.activeSubject.name}!`);
+        document.getElementById('codeVaultModal')?.classList.add('hidden');
     }
 
     // ==========================================
-    // FLOATING AI STUDY ASSISTANT
+    // GOOGLE GEMINI API SETTINGS & ENGINE
+    // ==========================================
+    openGeminiSettings() {
+        const modal = document.getElementById('geminiSettingsModal');
+        const input = document.getElementById('geminiApiKeyInput');
+        const result = document.getElementById('geminiTestResult');
+        if (input) input.value = window.storageManager.getGeminiApiKey() || '';
+        if (result) {
+            result.className = 'text-xs font-medium hidden';
+            result.textContent = '';
+        }
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    saveGeminiSettings() {
+        const input = document.getElementById('geminiApiKeyInput');
+        const key = input ? input.value.trim() : '';
+        window.storageManager.saveGeminiApiKey(key);
+        this.updateAIModelBadge();
+        const modal = document.getElementById('geminiSettingsModal');
+        if (modal) modal.classList.add('hidden');
+        if (key) {
+            this.showToast('🔑 Google Gemini API Key saved securely!');
+        } else {
+            this.showToast('ℹ️ Gemini API Key cleared. Offline Tutor active.');
+        }
+    }
+
+    async testGeminiConnection() {
+        const input = document.getElementById('geminiApiKeyInput');
+        const result = document.getElementById('geminiTestResult');
+        if (!result) return;
+
+        const key = input ? input.value.trim() : '';
+        if (!key) {
+            result.className = 'text-xs font-medium p-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/30 block';
+            result.textContent = '❌ Please enter an API key to test.';
+            return;
+        }
+
+        result.className = 'text-xs font-medium p-2.5 rounded-lg bg-slate-800 text-slate-300 block';
+        result.textContent = '🔄 Testing live connection with Google Gemini...';
+
+        const startTime = Date.now();
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: 'Respond with exactly: OK' }] }]
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                const errMsg = errData.error?.message || `HTTP ${response.status} ${response.statusText}`;
+                throw new Error(errMsg);
+            }
+
+            const latency = Date.now() - startTime;
+            result.className = 'text-xs font-medium p-2.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 block';
+            result.textContent = `✅ Gemini Connection Verified! Live latency: ${latency}ms`;
+        } catch (err) {
+            result.className = 'text-xs font-medium p-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/30 block';
+            result.textContent = `❌ Connection Error: ${err.message}`;
+        }
+    }
+
+    updateAIModelBadge() {
+        const key = window.storageManager.getGeminiApiKey();
+        const beacon = document.getElementById('aiStatusBeacon');
+        const statusText = document.getElementById('aiStatusText');
+
+        if (key && key.length > 10) {
+            if (beacon) beacon.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            if (statusText) statusText.textContent = 'Gemini 1.5 Flash Online';
+        } else {
+            if (beacon) beacon.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+            if (statusText) statusText.textContent = 'Offline Tutor Active';
+        }
+    }
+
+    // ==========================================
+    // FLOATING AI STUDY ASSISTANT & CHAT
     // ==========================================
     toggleAIAssistant() {
         const drawer = document.getElementById('aiChatDrawer');
-        drawer.classList.toggle('hidden');
+        if (drawer) {
+            drawer.classList.toggle('hidden');
+            if (!drawer.classList.contains('hidden')) {
+                const messages = document.getElementById('aiChatMessages');
+                if (messages) messages.scrollTop = messages.scrollHeight;
+                document.getElementById('aiChatInput')?.focus();
+            }
+        }
     }
 
-    sendAIMessage() {
+    clearAIChat() {
+        const chatBox = document.getElementById('aiChatMessages');
+        if (chatBox) {
+            chatBox.innerHTML = `
+                <div class="flex items-start space-x-2.5 mb-3">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center text-xs shrink-0 shadow">
+                        <i class="fa-solid fa-sparkles"></i>
+                    </div>
+                    <div class="bg-slate-800/90 border border-slate-700/70 rounded-2xl rounded-tl-none p-3 text-xs text-slate-200 leading-relaxed shadow-sm">
+                        <p class="font-bold text-orange-400 mb-1">Hello! I'm MPW AI Study Assistant 🎓</p>
+                        <p>Ask me anything about your current subject, request a summary, or get instant step-by-step explanations.</p>
+                    </div>
+                </div>
+            `;
+        }
+        this.showToast('🧹 AI Chat History Cleared');
+    }
+
+    sendQuickAIPrompt(prompt) {
         const input = document.getElementById('aiChatInput');
+        if (input) {
+            input.value = prompt;
+            this.sendAIMessage();
+        }
+    }
+
+    toggleAIMic() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        const micBtn = document.getElementById('aiVoiceBtn');
+
+        if (this.isAIMicListening) {
+            if (this.aiRecognition) this.aiRecognition.stop();
+            this.isAIMicListening = false;
+            if (micBtn) {
+                micBtn.classList.remove('text-orange-400', 'animate-pulse', 'border-orange-500');
+                micBtn.classList.add('text-slate-400');
+            }
+            return;
+        }
+
+        try {
+            this.aiRecognition = new SpeechRecognition();
+            this.aiRecognition.continuous = false;
+            this.aiRecognition.interimResults = false;
+            this.aiRecognition.lang = 'en-US';
+
+            this.aiRecognition.onstart = () => {
+                this.isAIMicListening = true;
+                if (micBtn) {
+                    micBtn.classList.add('text-orange-400', 'animate-pulse', 'border-orange-500');
+                    micBtn.classList.remove('text-slate-400');
+                }
+                this.showToast('🎙️ Listening... Speak your study question');
+            };
+
+            this.aiRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                const input = document.getElementById('aiChatInput');
+                if (input) {
+                    input.value = transcript;
+                }
+            };
+
+            this.aiRecognition.onerror = (e) => {
+                console.error('AI Speech error:', e);
+                this.isAIMicListening = false;
+                if (micBtn) {
+                    micBtn.classList.remove('text-orange-400', 'animate-pulse', 'border-orange-500');
+                    micBtn.classList.add('text-slate-400');
+                }
+            };
+
+            this.aiRecognition.onend = () => {
+                this.isAIMicListening = false;
+                if (micBtn) {
+                    micBtn.classList.remove('text-orange-400', 'animate-pulse', 'border-orange-500');
+                    micBtn.classList.add('text-slate-400');
+                }
+            };
+
+            this.aiRecognition.start();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async sendAIMessage() {
+        const input = document.getElementById('aiChatInput');
+        if (!input) return;
         const text = input.value.trim();
         if (!text) return;
 
         const chatBox = document.getElementById('aiChatMessages');
+        if (!chatBox) return;
+
+        // Render User Message
         chatBox.innerHTML += `
             <div class="flex justify-end mb-3">
-                <div class="bg-orange-500 text-white rounded-2xl rounded-tr-none px-4 py-2.5 text-sm max-w-[80%] shadow">
-                    ${text}
+                <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-2xl rounded-tr-none px-3.5 py-2.5 text-xs max-w-[85%] shadow-md leading-relaxed">
+                    ${this.escapeHtml(text)}
                 </div>
             </div>
         `;
         input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Generate instant smart study response
-        setTimeout(() => {
-            const replies = [
-                `Based on your notes in **${this.activeSubject ? this.activeSubject.name : 'your workspace'}**, remember that Stacks use LIFO and Heaps maintain the Min/Max priority property!`,
-                `Great study question! For exams, focus on the differences between BFS (Queue-based) and DFS (Stack/Recursion). Would you like a 3-question quick quiz?`,
-                `I have scheduled a flashcard review for this exact concept in your **Flashcard Studio**. Keep up your ${window.authManager.getCurrentUser()?.dailyStreak || 5}-day streak! 🔥`
-            ];
-            const botReply = replies[Math.floor(Math.random() * replies.length)];
-            chatBox.innerHTML += `
-                <div class="flex justify-start mb-3">
-                    <div class="bg-slate-800 text-slate-200 border border-slate-700 rounded-2xl rounded-tl-none px-4 py-2.5 text-sm max-w-[85%] shadow">
-                        <p class="font-bold text-orange-400 text-xs mb-1">🤖 MPW Study Assistant</p>
-                        ${botReply}
+        // Temporary Loading Bubble
+        const loadingId = 'loading_' + Date.now();
+        chatBox.innerHTML += `
+            <div id="${loadingId}" class="flex items-start space-x-2.5 mb-3">
+                <div class="w-7 h-7 rounded-lg bg-slate-800 text-orange-400 flex items-center justify-center text-xs shrink-0">
+                    <i class="fa-solid fa-robot animate-bounce"></i>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl rounded-tl-none p-3 text-xs text-slate-400 italic">
+                    Thinking with study context...
+                </div>
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Retrieve response either from Gemini API or smart tutor fallback
+        let replyText = '';
+        const apiKey = window.storageManager.getGeminiApiKey();
+
+        if (apiKey && apiKey.length > 10) {
+            try {
+                replyText = await this.callGeminiAPI(text, apiKey);
+            } catch (err) {
+                console.warn('Gemini API request failed, using smart tutor fallback:', err);
+                replyText = this.generateSmartTutorResponse(text) + `\n\n*(Note: Gemini live query encountered an issue [${err.message}]; served via MPW Smart Offline Tutor)*`;
+            }
+        } else {
+            replyText = this.generateSmartTutorResponse(text);
+        }
+
+        // Remove loading bubble
+        document.getElementById(loadingId)?.remove();
+
+        // Render Bot Response with Action Toolbar
+        const botBubbleId = 'bot_' + Date.now();
+        const formattedHtml = this.formatMarkdown(replyText);
+        const encodedRaw = encodeURIComponent(replyText);
+
+        chatBox.innerHTML += `
+            <div id="${botBubbleId}" class="flex items-start space-x-2.5 mb-4 group">
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center text-xs shrink-0 shadow">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+                <div class="flex-1 max-w-[90%] bg-slate-800/95 border border-slate-700/80 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-100 shadow-md">
+                    <div class="markdown-body leading-relaxed text-slate-200">
+                        ${formattedHtml}
+                    </div>
+
+                    <!-- Action Toolbar -->
+                    <div class="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-700/60 text-[11px] text-slate-400">
+                        <button onclick="window.appController.speakText(decodeURIComponent('${encodedRaw}'))" class="hover:text-orange-400 px-2 py-0.5 rounded bg-slate-900/60 hover:bg-slate-900 transition-colors flex items-center space-x-1" title="Read Aloud">
+                            <i class="fa-solid fa-volume-high"></i>
+                            <span>Speak</span>
+                        </button>
+                        <button onclick="window.appController.copyToClipboard(decodeURIComponent('${encodedRaw}'))" class="hover:text-orange-400 px-2 py-0.5 rounded bg-slate-900/60 hover:bg-slate-900 transition-colors flex items-center space-x-1" title="Copy Text">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copy</span>
+                        </button>
+                        <button onclick="window.appController.addAIFlashcard(decodeURIComponent('${encodedRaw}'))" class="hover:text-orange-400 px-2 py-0.5 rounded bg-slate-900/60 hover:bg-slate-900 transition-colors flex items-center space-x-1" title="Create Flashcard">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>To Card</span>
+                        </button>
+                        <button onclick="window.appController.saveAIToSubjectNotes(decodeURIComponent('${encodedRaw}'))" class="hover:text-orange-400 px-2 py-0.5 rounded bg-slate-900/60 hover:bg-slate-900 transition-colors flex items-center space-x-1" title="Save to Notes">
+                            <i class="fa-solid fa-file-pen"></i>
+                            <span>To Notes</span>
+                        </button>
                     </div>
                 </div>
+            </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async callGeminiAPI(userQuery, apiKey) {
+        const subjContext = this.activeSubject
+            ? `Current Subject: "${this.activeSubject.name}". Session: "${this.currentSession}".`
+            : `Session: "${this.currentSession}".`;
+
+        const systemInstruction = `You are MPW AI, an expert academic study assistant and mentor for students.
+${subjContext}
+Rules:
+1. Provide accurate, clear, and easy-to-understand explanations with key formulas, code syntax, or bullet points.
+2. Structure answers neatly with headings, bold keywords, and clean markdown.
+3. Keep answers directly educational, concise, and focused on learning.
+4. Strictly do NOT give quiz scores, test grading, or test simulations. This is a reference & learning tool.`;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: `${systemInstruction}\n\nStudent Question: ${userQuery}` }]
+                    }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const candidate = data.candidates?.[0];
+        const text = candidate?.content?.parts?.[0]?.text;
+        if (!text) throw new Error('Empty response received from Gemini');
+        return text;
+    }
+
+    generateSmartTutorResponse(query) {
+        const q = query.toLowerCase();
+        const subjName = this.activeSubject ? this.activeSubject.name : 'your academic subject';
+
+        if (q.includes('analogy') || q.includes('simply')) {
+            return `### 💡 Real-World Analogy for ${subjName}\n\nThink of this concept like a **high-speed organized library**:\n- **Index / Directory**: A fast catalog like a Hash Table or B-Tree allowing O(1) or O(log n) lookup.\n- **Books on Desks**: Like RAM or Cache — extremely fast to access right now, but limited in capacity.\n- **Storage Basement**: Like Persistent SSD Storage — holds everything permanently, but takes slightly longer to retrieve.\n\nKeep this mental model in mind when designing or studying!`;
+        }
+
+        if (q.includes('summarize') || q.includes('revision') || q.includes('summary')) {
+            return `### 📋 Quick Revision Summary: ${subjName}\n\n1. **Core Fundamental**: Understand the primary governing formula or algorithm invariants.\n2. **Complexity Profile**: Typical optimal solutions operate in O(n log n) time and O(n) auxiliary space.\n3. **Exam Anchor**: Always verify base edge cases (empty input, null pointers, single element).\n4. **Best Practice**: Sketch a quick state diagram or memory layout before writing full derivations.`;
+        }
+
+        if (q.includes('viva') || q.includes('question') || q.includes('probable')) {
+            return `### 🎯 Top Study Questions for ${subjName}\n\n1. **Q**: What is the core trade-off between time and space in this domain?\n   - **A**: Sacrificing memory (e.g. hash tables or memoization tables) reduces time complexity from O(2^n) or O(n^2) down to O(n).\n2. **Q**: How do boundary conditions affect stability?\n   - **A**: Boundary invariants ensure correctness without segmentation faults or off-by-one errors.\n3. **Q**: Which data structure offers optimal insertion and retrieval for priority queues?\n   - **A**: A Binary Heap (O(log n) insert/extract-min) or Fibonacci Heap.`;
+        }
+
+        if (q.includes('flashcard') || q.includes('card')) {
+            return `### 🗂️ Flashcard Prompt\n\n**Front**: What is the primary property that distinguishes this topic in ${subjName}?\n\n**Back**: It enforces strict invariant guarantees, optimal bounds, and predictable execution across all operating conditions.`;
+        }
+
+        if (q.includes('complexity') || q.includes('big-o') || q.includes('time')) {
+            return `### ⏱️ Time & Space Complexity Breakdown\n\n- **Best Case**: O(n) when data is already partitioned or pre-sorted.\n- **Average Case**: O(n log n) using divide-and-conquer strategy.\n- **Worst Case**: O(n^2) if degenerate pivot selection occurs (mitigated by randomized pivots).\n- **Auxiliary Space**: O(log n) recursion stack space.`;
+        }
+
+        return `### 📘 Study Insights for ${subjName}\n\nBased on your active curriculum:\n- Focus on understanding the **underlying principle** rather than memorizing syntax.\n- Break complex problems down into modular sub-components.\n- Use the **Spaced Repetition Flashcards** in MPW to cement this in your long-term memory!\n\n*(Tip: Add your free Google Gemini API Key in Settings to get real-time generative answers for any question!)*`;
+    }
+
+    speakText(text) {
+        if (!('speechSynthesis' in window)) {
+            this.showToast('⚠️ Speech Synthesis not supported in this browser');
+            return;
+        }
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            this.showToast('🔇 Audio playback stopped');
+            return;
+        }
+
+        const clean = text.replace(/[*#`_~\[\]]/g, '').replace(/\n+/g, ' ');
+        const utterance = new SpeechSynthesisUtterance(clean);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+        this.showToast('🔊 Reading study note aloud...');
+    }
+
+    copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('📋 Copied to clipboard!');
+            }).catch(() => {
+                this.fallbackCopyToClipboard(text);
+            });
+        } else {
+            this.fallbackCopyToClipboard(text);
+        }
+    }
+
+    fallbackCopyToClipboard(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            this.showToast('📋 Copied to clipboard!');
+        } catch (e) {
+            this.showToast('⚠️ Could not copy text');
+        }
+        document.body.removeChild(ta);
+    }
+
+    escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    formatMarkdown(raw) {
+        if (!raw) return '';
+        let html = this.escapeHtml(raw);
+
+        // Code blocks ```code```
+        html = html.replace(/```([\s\S]*?)```/g, (match, p1) => {
+            return `<pre class="bg-slate-950 p-2.5 rounded-lg my-2 font-mono text-[11px] text-emerald-400 overflow-x-auto border border-slate-800"><code>${p1.trim()}</code></pre>`;
+        });
+
+        // Inline code `code`
+        html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-900 text-orange-400 px-1 py-0.5 rounded font-mono text-[11px]">$1</code>');
+
+        // Headers ###
+        html = html.replace(/^### (.*$)/gim, '<h4 class="font-bold text-white text-xs mt-2 mb-1">$1</h4>');
+        html = html.replace(/^## (.*$)/gim, '<h3 class="font-bold text-white text-sm mt-2 mb-1">$1</h3>');
+        html = html.replace(/^# (.*$)/gim, '<h2 class="font-black text-white text-base mt-2 mb-1">$1</h2>');
+
+        // Bold **text**
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
+
+        // Italic *text*
+        html = html.replace(/\*([^*]+)\*/g, '<em class="italic text-slate-300">$1</em>');
+
+        // Unordered lists
+        html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>');
+
+        // Newlines
+        html = html.replace(/\n/g, '<br>');
+
+        return html;
+    }
+
+    addAIFlashcard(text) {
+        let front = 'AI Study Prompt';
+        let back = text;
+
+        if (text.includes('**Front**:') && text.includes('**Back**:')) {
+            const parts = text.split('**Back**:');
+            front = parts[0].replace('**Front**:', '').replace(/###/g, '').trim();
+            back = parts[1].trim();
+        } else {
+            const lines = text.split('\n').filter(l => l.trim().length > 0);
+            if (lines.length > 0) front = lines[0].replace(/[*#]/g, '').trim();
+            if (lines.length > 1) back = lines.slice(1).join('\n').replace(/[*#]/g, '').trim();
+        }
+
+        const subjId = this.activeSubject ? this.activeSubject.id : 'general';
+        const card = {
+            id: 'card_' + Date.now(),
+            subjectId: subjId,
+            front: front.slice(0, 150),
+            back: back.slice(0, 500),
+            leitnerBox: 1,
+            reviewsCount: 0
+        };
+
+        window.storageManager.saveFlashcard(card);
+        this.showToast('🗂️ Added to Spaced Repetition Flashcards!');
+    }
+
+    saveAIToSubjectNotes(text) {
+        if (!this.activeSubject) {
+            const subjects = window.storageManager.getSubjects(this.currentSession);
+            if (subjects && subjects.length > 0) {
+                this.activeSubject = subjects[0];
+            } else {
+                this.showToast('⚠️ Create a subject first to save notes!');
+                return;
+            }
+        }
+
+        if (!this.activeSubject.units || this.activeSubject.units.length === 0) {
+            this.activeSubject.units = [{
+                id: 'unit_' + Date.now(),
+                name: 'Unit 1: Study Notes',
+                chapters: []
+            }];
+        }
+
+        const unit = this.activeSubject.units[0];
+        if (!unit.chapters || unit.chapters.length === 0) {
+            unit.chapters = [{
+                id: 'chap_' + Date.now(),
+                name: 'Chapter 1: AI Summaries',
+                files: []
+            }];
+        }
+
+        const chap = unit.chapters[0];
+        const newFile = {
+            id: 'file_' + Date.now(),
+            name: `AI_Study_Note_${new Date().toLocaleTimeString().replace(/:/g, '-')}.docx`,
+            type: 'docx',
+            size: `${(text.length / 1024).toFixed(1)} KB`,
+            pages: 1,
+            isStarred: true,
+            label: 'AI Study Summary',
+            content: text
+        };
+
+        chap.files.push(newFile);
+        this.saveActiveSubject();
+        this.renderChapterFolderHierarchy();
+        this.showToast(`📝 Saved AI Note to ${this.activeSubject.name}!`);
+    }
+
+    // ==========================================
+    // UNIVERSAL COMMAND PALETTE (Ctrl + K)
+    // ==========================================
+    initKeyboardShortcuts() {
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                this.toggleCommandPalette();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+                e.preventDefault();
+                this.toggleAIAssistant();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                this.togglePomodoroModal();
+            }
+        });
+    }
+
+    toggleCommandPalette() {
+        const modal = document.getElementById('commandPaletteModal');
+        if (!modal) return;
+        const isHidden = modal.classList.contains('hidden');
+        if (isHidden) {
+            modal.classList.remove('hidden');
+            const input = document.getElementById('commandPaletteInput');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            this.handleCommandPaletteSearch('');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    handleCommandPaletteSearch(query) {
+        const container = document.getElementById('commandPaletteResults');
+        if (!container) return;
+        const q = (query || '').toLowerCase().trim();
+
+        const allCommands = [
+            { icon: 'fa-solid fa-graduation-cap', text: 'Switch to College Academic Session', action: () => this.switchSession('college'), tag: 'Session' },
+            { icon: 'fa-solid fa-school', text: 'Switch to School Academic Session', action: () => this.switchSession('school'), tag: 'Session' },
+            { icon: 'fa-solid fa-briefcase', text: 'Switch to Personal Workspace', action: () => this.switchSession('personal'), tag: 'Session' },
+            { icon: 'fa-solid fa-stopwatch', text: 'Open Pomodoro Focus Timer & Soundscapes', action: () => this.togglePomodoroModal(), tag: 'Focus' },
+            { icon: 'fa-solid fa-code', text: 'Open Code & Formula Reference Vault', action: () => this.openCodeVaultModal(), tag: 'Tools' },
+            { icon: 'fa-solid fa-robot', text: 'Open MPW AI Study Assistant', action: () => this.toggleAIAssistant(), tag: 'AI' },
+            { icon: 'fa-solid fa-key', text: 'Google Gemini API Settings', action: () => this.openGeminiSettings(), tag: 'AI' },
+            { icon: 'fa-solid fa-layer-group', text: 'Open Spaced Repetition Flashcards', action: () => window.whiteboardStudio?.launchStudio('flashcards', this.activeSubject?.id), tag: 'Studio' },
+            { icon: 'fa-solid fa-pen-nib', text: 'Open Freeform Drawing Canvas', action: () => window.whiteboardStudio?.openStudioWithDevicePrompt('drawing', this.activeSubject?.id), tag: 'Studio' },
+            { icon: 'fa-solid fa-file-pen', text: 'Open Ruled Handwritten Notes', action: () => window.whiteboardStudio?.openStudioWithDevicePrompt('notes', this.activeSubject?.id), tag: 'Studio' },
+            { icon: 'fa-solid fa-keyboard', text: 'Open Ruled Typed Notepad', action: () => window.whiteboardStudio?.launchStudio('notepad', this.activeSubject?.id), tag: 'Studio' },
+            { icon: 'fa-solid fa-calculator', text: 'Open CGPA & Target Grade Predictor', action: () => this.openCGPACalculator(), tag: 'Tools' },
+            { icon: 'fa-solid fa-eye-slash', text: 'Toggle Zen Distraction-Free Study Mode', action: () => this.toggleZenMode(), tag: 'Focus' },
+            { icon: 'fa-solid fa-cloud-arrow-down', text: 'Download Full Study Workspace Backup', action: () => this.downloadFullBackup(), tag: 'Data' }
+        ];
+
+        let matched = allCommands.filter(c => !q || c.text.toLowerCase().includes(q) || c.tag.toLowerCase().includes(q));
+
+        if (q) {
+            const subjects = window.storageManager.getSubjects(this.currentSession);
+            subjects.forEach(s => {
+                if (s.name.toLowerCase().includes(q)) {
+                    matched.push({
+                        icon: 'fa-solid fa-book-bookmark',
+                        text: `Subject: ${s.name}`,
+                        action: () => this.openSubjectWorkspace(s.id),
+                        tag: 'Subject'
+                    });
+                }
+                s.units?.forEach(u => {
+                    u.chapters?.forEach(c => {
+                        c.files?.forEach(f => {
+                            if (f.name.toLowerCase().includes(q)) {
+                                matched.push({
+                                    icon: 'fa-solid fa-file-lines',
+                                    text: `File: ${f.name} (${s.name})`,
+                                    action: () => this.openDocumentReader(f.id),
+                                    tag: 'File'
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        container.innerHTML = '';
+        if (matched.length === 0) {
+            container.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">No commands or files found matching "${this.escapeHtml(query)}"</div>`;
+            return;
+        }
+
+        matched.slice(0, 10).forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'p-2.5 hover:bg-slate-800 rounded-xl cursor-pointer flex items-center justify-between transition-colors group';
+            row.innerHTML = `
+                <div class="flex items-center space-x-3 truncate">
+                    <span class="w-7 h-7 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 text-slate-400 group-hover:text-orange-400 flex items-center justify-center text-xs shrink-0 transition-colors">
+                        <i class="${item.icon}"></i>
+                    </span>
+                    <span class="text-xs font-medium text-slate-200 group-hover:text-white truncate">${item.text}</span>
+                </div>
+                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono shrink-0">${item.tag}</span>
             `;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 500);
+            row.onclick = () => {
+                this.toggleCommandPalette();
+                item.action();
+            };
+            container.appendChild(row);
+        });
+    }
+
+    // ==========================================
+    // POMODORO FOCUS STATION & SOUNDSCAPES
+    // ==========================================
+    togglePomodoroModal() {
+        const modal = document.getElementById('pomodoroTimerModal');
+        if (modal) modal.classList.toggle('hidden');
+    }
+
+    setPomodoroMode(mode) {
+        this.pomodoroMode = mode;
+        if (mode === 'focus') this.pomodoroSeconds = 25 * 60;
+        else if (mode === 'short') this.pomodoroSeconds = 5 * 60;
+        else if (mode === 'long') this.pomodoroSeconds = 15 * 60;
+
+        if (this.pomodoroRunning) {
+            clearInterval(this.pomodoroTimer);
+            this.pomodoroRunning = false;
+            const btn = document.getElementById('pomoStartBtn');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Start Focus';
+        }
+
+        ['pomoModeFocus', 'pomoModeShort', 'pomoModeLong'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.className = 'flex-1 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors';
+            }
+        });
+        const activeId = mode === 'focus' ? 'pomoModeFocus' : mode === 'short' ? 'pomoModeShort' : 'pomoModeLong';
+        const activeEl = document.getElementById(activeId);
+        if (activeEl) {
+            activeEl.className = 'flex-1 py-1.5 rounded-lg bg-orange-500 text-white transition-colors';
+        }
+
+        const stateLabel = document.getElementById('pomodoroStateLabel');
+        if (stateLabel) {
+            stateLabel.textContent = mode === 'focus' ? 'Focus Time' : mode === 'short' ? 'Short Break' : 'Long Break';
+        }
+
+        this.updatePomodoroDisplay();
+    }
+
+    togglePomodoroTimer() {
+        const btn = document.getElementById('pomoStartBtn');
+        if (this.pomodoroRunning) {
+            clearInterval(this.pomodoroTimer);
+            this.pomodoroRunning = false;
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Resume Focus';
+        } else {
+            this.pomodoroRunning = true;
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause mr-1.5"></i> Pause Focus';
+
+            this.pomodoroTimer = setInterval(() => {
+                if (this.pomodoroSeconds > 0) {
+                    this.pomodoroSeconds--;
+                    this.updatePomodoroDisplay();
+                } else {
+                    clearInterval(this.pomodoroTimer);
+                    this.pomodoroRunning = false;
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Start Focus';
+
+                    this.playCompletionChime();
+                    if (this.pomodoroMode === 'focus') {
+                        window.storageManager.logStudyMinutes(25);
+                        this.showToast('🎉 Focus Session Complete! Logged 25 study minutes 🔥');
+                    } else {
+                        this.showToast('🔔 Break time is up! Ready to focus?');
+                    }
+                }
+            }, 1000);
+        }
+    }
+
+    resetPomodoroTimer() {
+        if (this.pomodoroTimer) clearInterval(this.pomodoroTimer);
+        this.pomodoroRunning = false;
+        this.setPomodoroMode(this.pomodoroMode);
+        const btn = document.getElementById('pomoStartBtn');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Start Focus';
+        this.showToast('⏱️ Timer reset');
+    }
+
+    updatePomodoroDisplay() {
+        const mins = Math.floor(this.pomodoroSeconds / 60);
+        const secs = this.pomodoroSeconds % 60;
+        const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        const disp = document.getElementById('pomodoroTimeDisplay');
+        if (disp) disp.textContent = timeStr;
+
+        const pill = document.getElementById('topBarPomodoroPill');
+        if (pill) pill.textContent = timeStr;
+    }
+
+    playCompletionChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.8);
+        } catch (e) {
+            console.log('Chime error:', e);
+        }
+    }
+
+    // ==========================================
+    // AMBIENT SOUNDSCAPES (100% Offline Web Audio)
+    // ==========================================
+    toggleAmbientSound(type) {
+        if (this.activeSoundType === type) {
+            this.stopAmbientSound();
+            return;
+        }
+
+        this.stopAmbientSound();
+        this.activeSoundType = type;
+
+        const btn = document.getElementById(`soundBtn_${type}`);
+        if (btn) {
+            btn.classList.add('bg-orange-500/20', 'border', 'border-orange-500/50', 'text-orange-400');
+            btn.classList.remove('bg-slate-800', 'text-slate-300');
+        }
+
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioCtx = new AudioContext();
+
+            const bufferSize = this.audioCtx.sampleRate * 4;
+            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            let lastOut = 0.0;
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                if (type === 'rain') {
+                    data[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = data[i];
+                    data[i] *= 3.5;
+                } else if (type === 'waves') {
+                    data[i] = (lastOut + (0.05 * white)) / 1.05;
+                    lastOut = data[i];
+                    data[i] *= 2.5;
+                } else if (type === 'cafe') {
+                    data[i] = (white * 0.15);
+                } else {
+                    data[i] = white * 0.2;
+                }
+            }
+
+            const noiseNode = this.audioCtx.createBufferSource();
+            noiseNode.buffer = buffer;
+            noiseNode.loop = true;
+
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.type = type === 'rain' ? 'lowpass' : type === 'waves' ? 'bandpass' : 'lowpass';
+            filter.frequency.value = type === 'rain' ? 800 : type === 'waves' ? 400 : 1200;
+
+            const gainNode = this.audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+
+            if (type === 'waves') {
+                const lfo = this.audioCtx.createOscillator();
+                const lfoGain = this.audioCtx.createGain();
+                lfo.frequency.value = 0.15;
+                lfoGain.gain.value = 0.15;
+                lfo.connect(gainNode.gain);
+                lfo.start();
+            }
+
+            noiseNode.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(this.audioCtx.destination);
+            noiseNode.start();
+
+            this.activeSoundNode = noiseNode;
+            this.showToast(`🎧 Ambient Soundscape Playing: ${type.toUpperCase()}`);
+        } catch (err) {
+            console.error('Ambient sound error:', err);
+            this.showToast('⚠️ Web Audio playback unavailable');
+        }
+    }
+
+    stopAmbientSound() {
+        if (this.activeSoundNode) {
+            try { this.activeSoundNode.stop(); } catch (e) {}
+            this.activeSoundNode = null;
+        }
+        if (this.audioCtx) {
+            try { this.audioCtx.close(); } catch (e) {}
+            this.audioCtx = null;
+        }
+
+        ['rain', 'noise', 'waves', 'cafe'].forEach(t => {
+            const btn = document.getElementById(`soundBtn_${t}`);
+            if (btn) {
+                btn.classList.remove('bg-orange-500/20', 'border', 'border-orange-500/50', 'text-orange-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            }
+        });
+
+        if (this.activeSoundType) {
+            this.showToast('🔇 Ambient Sound Muted');
+        }
+        this.activeSoundType = null;
+    }
+
+    // ==========================================
+    // ZEN DISTRACTION-FREE STUDY MODE
+    // ==========================================
+    toggleZenMode() {
+        document.body.classList.toggle('zen-active');
+        const isZen = document.body.classList.contains('zen-active');
+        if (isZen) {
+            this.showToast('🧘 Zen Distraction-Free Mode ON. Press Esc or Zen button to exit.');
+        } else {
+            this.showToast('Zen Mode Exited');
+        }
+    }
+
+    // ==========================================
+    // DOCUMENT READER ANNOTATION SUMMARY
+    // ==========================================
+    generateSummaryFromHighlights() {
+        if (!this.activeAnnotations || this.activeAnnotations.length === 0) {
+            this.showToast('⚠️ No highlighted text found. Select text and click a color to highlight!');
+            return;
+        }
+
+        const quotes = this.activeAnnotations.map((a, i) => `${i + 1}. "${a.text}"`).join('\n\n');
+        const docName = this.activeFile ? this.activeFile.name : 'Document';
+        const summaryText = `### 📌 Revision Summary from Highlights: ${docName}\n\n**Extracted Key Points:**\n\n${quotes}\n\n**Study takeaway**: These definitions and formulas represent key anchors. Review them before exams!`;
+
+        this.currentSummaryText = summaryText;
+        const modal = document.getElementById('unitSummaryModal');
+        const titleEl = document.getElementById('unitSummaryModalTitle');
+        const contentEl = document.getElementById('unitSummaryContent');
+
+        if (titleEl) titleEl.textContent = `Highlighted Summary: ${docName}`;
+        if (contentEl) contentEl.innerHTML = this.formatMarkdown(summaryText);
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    generateQuizFromHighlights() {
+        // Pure study note alias - no test simulation as requested
+        this.generateSummaryFromHighlights();
     }
 
     // ==========================================
@@ -1226,6 +2405,10 @@ class AppController {
             } else if (e.key === 'Escape') {
                 // Close modals
                 document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+                ['commandPaletteModal', 'pomodoroTimerModal', 'codeVaultModal', 'unitSummaryModal', 'geminiSettingsModal', 'comingSoonModal', 'profileDrawerModal', 'cgpaModal', 'themeModal'].forEach(id => {
+                    document.getElementById(id)?.classList.add('hidden');
+                });
+                document.body.classList.remove('zen-active');
                 if (window.whiteboardStudio) window.whiteboardStudio.closeStudio();
             }
         });

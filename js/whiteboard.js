@@ -434,6 +434,7 @@ class WhiteboardStudio {
         this.currentCardIndex = 0;
         this.isCardFlipped = false;
         this.renderFlashcard();
+        this.updateMasteryDisplay();
     }
 
     renderFlashcard() {
@@ -476,6 +477,36 @@ class WhiteboardStudio {
         if (this.flashcards.length === 0) return;
         this.currentCardIndex = (this.currentCardIndex - 1 + this.flashcards.length) % this.flashcards.length;
         this.renderFlashcard();
+    }
+
+    rateCard(rating) {
+        if (this.flashcards.length === 0) return;
+        const card = this.flashcards[this.currentCardIndex];
+        if (!card) return;
+
+        card.confidence = rating; // 'again', 'hard', 'good', 'easy'
+        card.lastReviewed = Date.now();
+        if (rating === 'easy') card.interval = (card.interval || 1) * 2;
+        else if (rating === 'again') card.interval = 1;
+
+        window.storageManager.saveFlashcards(this.activeSubjectId, this.flashcards);
+        
+        // Update mastery bar
+        this.updateMasteryDisplay();
+
+        // Move to next card
+        this.nextCard();
+    }
+
+    updateMasteryDisplay() {
+        if (!this.flashcards || this.flashcards.length === 0) return;
+        const mastered = this.flashcards.filter(c => c.confidence === 'good' || c.confidence === 'easy').length;
+        const pct = Math.round((mastered / this.flashcards.length) * 100);
+        
+        const bar = document.getElementById('flashcardMasteryBar');
+        const txt = document.getElementById('flashcardMasteryText');
+        if (bar) bar.style.width = `${pct}%`;
+        if (txt) txt.textContent = `${pct}% Mastered (${mastered}/${this.flashcards.length})`;
     }
 
     addEmptyFlashcard() {

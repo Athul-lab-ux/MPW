@@ -46,7 +46,7 @@ class AuthManager {
             };
             localStorage.setItem(this.STORAGE_USERS_KEY, JSON.stringify([demoUser]));
             localStorage.setItem(this.STORAGE_COUNTER_KEY, '2');
-            localStorage.setItem(this.STORAGE_SESSION_KEY, JSON.stringify(demoUser));
+            // Deliberately do NOT set STORAGE_SESSION_KEY so app always starts on the Authentication Panel!
         }
     }
 
@@ -110,6 +110,7 @@ class AuthManager {
             dailyStreak: 1,
             lastLoginDate: new Date().toDateString(),
             profilePic: '',
+            isFirstLogin: true,
             createdAt: Date.now()
         };
 
@@ -121,6 +122,23 @@ class AuthManager {
             userId,
             user: newUser
         };
+    }
+
+    calculatePasswordStrength(password) {
+        if (!password) return { score: 0, label: 'Enter password', color: 'bg-slate-700', width: '0%' };
+        let score = 0;
+        if (password.length >= 6) score++;
+        if (password.length >= 8 && /[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+
+        switch (score) {
+            case 1: return { score: 1, label: 'Weak', color: 'bg-red-500', width: '25%' };
+            case 2: return { score: 2, label: 'Moderate', color: 'bg-amber-500', width: '50%' };
+            case 3: return { score: 3, label: 'Strong', color: 'bg-emerald-500', width: '75%' };
+            case 4: return { score: 4, label: 'Military-Grade 🔒', color: 'bg-cyan-400', width: '100%' };
+            default: return { score: 0, label: 'Very Weak', color: 'bg-red-400', width: '15%' };
+        }
     }
 
     login(identifier, password) {

@@ -32,99 +32,139 @@
 <body class="bg-slate-950 text-white min-h-screen flex flex-col antialiased selection:bg-orange-500 selection:text-white pb-16 md:pb-0">
 
     <!-- ========================================== -->
-    <!-- W1: AUTHENTICATION MODAL -->
+    <!-- W1: STRONG CYBER-SECURE AUTHENTICATION PANEL -->
     <!-- ========================================== -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-orange-500/30 mb-3">
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4">
+        <div class="cyber-card w-full max-w-md rounded-2xl p-6 md:p-8 shadow-2xl relative border border-orange-500/30">
+            <!-- Cyber Shield & Brand Header -->
+            <div class="text-center mb-5">
+                <div class="relative w-16 h-16 bg-gradient-to-tr from-orange-500 to-amber-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-orange-500/30 mb-3 border border-white/20">
                     <span class="text-2xl font-black text-white tracking-wider">MPW</span>
+                    <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-slate-900 shadow">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </span>
                 </div>
-                <h2 class="text-2xl font-bold text-white">Multipurpose Work</h2>
-                <p class="text-xs text-slate-400 mt-1">14 DSA Core Algorithms • Academic Study Suite</p>
+                <h2 class="text-2xl font-black text-white tracking-tight">MPW Secure Portal</h2>
+                <p class="text-xs text-slate-400 mt-1">Multi-Purpose Academic & Study Workspace</p>
+
+                <!-- Security Trust Badges -->
+                <div class="flex items-center justify-center space-x-2 mt-3 text-[10px] text-slate-400">
+                    <span class="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-emerald-400 font-medium flex items-center space-x-1">
+                        <i class="fa-solid fa-lock text-[9px]"></i><span>256-Bit SHA</span>
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-blue-400 font-medium flex items-center space-x-1">
+                        <i class="fa-solid fa-shield text-[9px]"></i><span>Brute Shield</span>
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-orange-400 font-medium flex items-center space-x-1">
+                        <i class="fa-solid fa-id-card text-[9px]"></i><span>Lifetime ID</span>
+                    </span>
+                </div>
             </div>
 
+            <!-- 1-Click Quick Demo Access Pill -->
+            <button type="button" onclick="window.appController.fillDemoAccount()" class="w-full mb-4 py-2 px-3 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-xl text-orange-400 text-xs font-semibold flex items-center justify-center space-x-2 transition-colors">
+                <i class="fa-solid fa-bolt text-amber-400"></i>
+                <span>Quick Demo Fill (MCP-user-000001 / password123)</span>
+            </button>
+
             <!-- Tab Switcher -->
-            <div class="flex border-b border-slate-700 mb-6 text-sm font-semibold">
+            <div class="flex border-b border-slate-700/80 mb-5 text-sm font-semibold">
                 <button id="authLoginTab" onclick="window.appController.switchAuthTab('login')" class="flex-1 py-2.5 border-b-2 border-orange-500 text-orange-500 transition-colors">
                     Sign In
                 </button>
                 <button id="authRegisterTab" onclick="window.appController.switchAuthTab('register')" class="flex-1 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-white transition-colors">
-                    New? Register
+                    New Student? Register
                 </button>
             </div>
 
             <!-- Login Form (Accepts User ID e.g. MCP-user-000001 OR Email) -->
             <form id="loginFormContainer" onsubmit="window.appController.handleLoginSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">User ID or Email</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Permanent User ID or Email</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-id-badge text-sm"></i>
                         </span>
-                        <input type="text" id="loginIdentifier" placeholder="MCP-user-000001 or email@domain.com" required
-                            class="w-full bg-slate-800/90 border border-slate-700 rounded-xl py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors">
+                        <input type="text" id="loginIdentifier" placeholder="MCP-user-000001 or student@domain.com" required
+                            class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-lock text-sm"></i>
                         </span>
                         <input type="password" id="loginPassword" placeholder="••••••••" required
-                            class="w-full bg-slate-800/90 border border-slate-700 rounded-xl py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors">
+                            class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl py-2.5 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all">
+                        <button type="button" onclick="window.appController.togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-white">
+                            <i id="loginEyeIcon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div id="loginErrorText" class="text-xs text-red-400 font-medium hidden"></div>
+                <div id="loginErrorText" class="text-xs text-red-400 font-medium p-2 bg-red-500/10 border border-red-500/30 rounded-lg hidden"></div>
 
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm">
-                    Enter MPW Workspace
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm flex items-center justify-center space-x-2">
+                    <span>Enter MPW Workspace</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </form>
 
             <!-- Registration Form -->
-            <form id="registerFormContainer" onsubmit="window.appController.handleRegisterSubmit(event)" class="space-y-3 hidden max-h-[70vh] overflow-y-auto pr-1">
+            <form id="registerFormContainer" onsubmit="window.appController.handleRegisterSubmit(event)" class="space-y-3 hidden max-h-[65vh] overflow-y-auto pr-1">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
                     <input type="text" id="regName" placeholder="Alex Johnson" required
-                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Age</label>
                         <input type="number" id="regAge" min="5" max="100" placeholder="20" required
-                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
                         <input type="tel" id="regPhone" placeholder="9876543210" required
-                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
                     <input type="email" id="regEmail" placeholder="student@example.com" required
-                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Address <span class="text-slate-500">(Optional)</span></label>
-                    <input type="text" id="regAddress" placeholder="Campus Hall A, Room 402"
-                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    <input type="text" id="regAddress" placeholder="Main Campus Block A"
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
-                        <input type="password" id="regPassword" placeholder="••••••••" required
-                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Create Password</label>
+                    <div class="relative">
+                        <input type="password" id="regPassword" placeholder="••••••••" required oninput="window.appController.checkPasswordStrength(this.value)"
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-white focus:outline-none focus:border-orange-500">
+                        <button type="button" onclick="window.appController.togglePasswordVisibility('regPassword', 'regEyeIcon')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white">
+                            <i id="regEyeIcon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
-                        <input type="password" id="regConfirmPassword" placeholder="••••••••" required
-                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-orange-500">
+                    <!-- Real-time Password Strength Meter -->
+                    <div class="mt-1.5">
+                        <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                            <span>Password Security:</span>
+                            <span id="passwordStrengthLabel" class="font-bold text-slate-400">Enter password</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div id="passwordStrengthBar" class="h-full bg-slate-700 password-strength-bar" style="width: 0%;"></div>
+                        </div>
                     </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="••••••••" required
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500">
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm mt-2">
@@ -378,17 +418,25 @@
                 </div>
             </div>
 
-            <!-- Academic Utilities -->
+            <!-- Academic Utilities & Productivity Suite -->
             <div>
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Academic Tools</p>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Study Suite</p>
                 <div class="space-y-1 text-sm font-medium">
+                    <button onclick="window.appController.toggleAIAssistant(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-robot text-orange-400 w-4"></i>
+                        <span>Chat with MPW AI</span>
+                    </button>
+                    <button onclick="window.appController.togglePomodoroModal(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-stopwatch text-blue-400 w-4"></i>
+                        <span>Focus Timer & Ambiance</span>
+                    </button>
+                    <button onclick="window.appController.openCodeVaultModal(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
+                        <i class="fa-solid fa-code text-teal-400 w-4"></i>
+                        <span>Code & Formula Vault</span>
+                    </button>
                     <button onclick="window.appController.openCGPACalculator(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
                         <i class="fa-solid fa-chart-line text-amber-400 w-4"></i>
                         <span>CGPA / Score Predictor</span>
-                    </button>
-                    <button onclick="window.appController.openLabCodePlayground(); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
-                        <i class="fa-solid fa-terminal text-teal-400 w-4"></i>
-                        <span>Lab & Viva Code Vault</span>
                     </button>
                     <button onclick="document.getElementById('themeModal').classList.remove('hidden'); window.appController.toggleMobileDrawer();" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5">
                         <i class="fa-solid fa-palette text-pink-400 w-4"></i>
@@ -438,13 +486,31 @@
                 </div>
             </div>
 
-            <!-- Right: Streak, Palette, Profile Pill, Logout -->
+            <!-- Center/Right Controls: Command Palette, Pomodoro, Streak, Zen, Palette, Profile, Logout -->
             <div class="flex items-center space-x-2 md:space-x-3">
+                <!-- Universal Quick Command Palette Trigger (Ctrl + K) -->
+                <button onclick="window.appController.toggleCommandPalette()" class="hidden sm:flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-xl text-xs text-slate-300 hover:text-white transition-colors" title="Quick Command Palette (Ctrl+K)">
+                    <i class="fa-solid fa-magnifying-glass text-orange-400 text-xs"></i>
+                    <span class="text-[11px] text-slate-400">Search</span>
+                    <kbd class="bg-slate-900/90 text-slate-400 px-1.5 py-0.5 rounded text-[10px] font-mono border border-slate-700">Ctrl K</kbd>
+                </button>
+
+                <!-- Pomodoro Study Timer Pill -->
+                <button onclick="window.appController.togglePomodoroModal()" class="flex items-center space-x-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/40 px-2.5 py-1.5 rounded-xl text-blue-300 text-xs font-semibold transition-colors" title="Pomodoro Focus Timer & Ambient Soundscape">
+                    <i class="fa-solid fa-stopwatch text-blue-400"></i>
+                    <span id="headerTimerDisplay" class="font-mono">25:00</span>
+                </button>
+
                 <!-- Daily Streak Badge -->
                 <div class="flex items-center space-x-1 bg-orange-500/15 border border-orange-500/30 px-2.5 py-1.5 rounded-xl text-orange-400 text-xs font-bold" title="Daily Study Streak">
                     <span>🔥</span>
                     <span id="headerStreakCount">5</span>
                 </div>
+
+                <!-- Zen Distraction-Free Study Mode -->
+                <button onclick="window.appController.toggleZenMode()" class="p-2 rounded-xl text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition-colors hidden sm:block" title="Zen Distraction-Free Study Mode">
+                    <i class="fa-solid fa-spa text-sm"></i>
+                </button>
 
                 <!-- 3-Tier Color Customizer Trigger (Desktop) -->
                 <button onclick="document.getElementById('themeModal').classList.remove('hidden')" class="p-2 rounded-xl text-slate-300 hover:text-orange-400 hover:bg-slate-800 transition-colors hidden sm:block" title="Customize 3-Tier Theme">
@@ -514,17 +580,25 @@
                         </div>
                     </div>
 
-                    <!-- Academic Utilities -->
+                    <!-- Academic Utilities & Productivity Suite -->
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Academic Tools</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Study Suite</p>
                         <div class="space-y-1 text-sm font-medium">
+                            <button onclick="window.appController.toggleAIAssistant()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-robot text-orange-400 w-4"></i>
+                                <span>Chat with MPW AI</span>
+                            </button>
+                            <button onclick="window.appController.togglePomodoroModal()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-stopwatch text-blue-400 w-4"></i>
+                                <span>Focus Timer & Ambiance</span>
+                            </button>
+                            <button onclick="window.appController.openCodeVaultModal()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
+                                <i class="fa-solid fa-code text-teal-400 w-4"></i>
+                                <span>Code & Formula Vault</span>
+                            </button>
                             <button onclick="window.appController.openCGPACalculator()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
                                 <i class="fa-solid fa-chart-line text-amber-400 w-4"></i>
                                 <span>CGPA / Score Predictor</span>
-                            </button>
-                            <button onclick="window.appController.openLabCodePlayground()" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-orange-400 flex items-center space-x-2.5 transition-colors">
-                                <i class="fa-solid fa-terminal text-teal-400 w-4"></i>
-                                <span>Lab & Viva Code Vault</span>
                             </button>
                             <button onclick="window.appController.showComingSoonModal('File Conversion & Editing', 'Upcoming engine will let you edit PDF, PPT, and DOCX files in-app and convert 1-to-1!')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 flex items-center justify-between transition-colors">
                                 <span class="flex items-center space-x-2.5">
@@ -591,10 +665,32 @@
                             <h3 id="detailSubjectName" class="text-lg md:text-xl font-bold text-white truncate max-w-[200px] sm:max-w-md">Data Structures</h3>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="window.appController.promptAddUnit()" class="py-2 px-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs transition-colors">
+                            <!-- Natural Alphanumeric Sort Selector -->
+                            <div class="flex items-center bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 text-xs">
+                                <i class="fa-solid fa-arrow-down-wide-short text-orange-400 mr-1.5 text-xs"></i>
+                                <select id="unitSortSelect" onchange="window.appController.changeSortCriteria(this.value)" class="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer">
+                                    <option value="number" selected>🔢 Unit Number (1-N)</option>
+                                    <option value="name">🔤 Name (A-Z)</option>
+                                    <option value="starred">⭐ Starred First</option>
+                                    <option value="recent">🕒 Recent</option>
+                                </select>
+                            </div>
+                            <button onclick="window.appController.promptAddUnit()" class="py-2 px-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-xs transition-colors shadow">
                                 + Add Unit
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Drag & Drop Quick Stash Dropzone & AI Summary Banner -->
+                    <div class="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-3 bg-slate-900/80 border border-dashed border-orange-500/40 rounded-xl">
+                        <div class="flex items-center space-x-2 text-xs text-slate-300" ondragover="event.preventDefault()" ondrop="window.appController.handleDragDropUpload(event)">
+                            <i class="fa-solid fa-cloud-arrow-up text-orange-400 text-base"></i>
+                            <span>Drag & drop any PDF, PPT, Word, or Image here to save to this subject</span>
+                        </div>
+                        <button onclick="window.appController.generateSubjectSummary()" class="py-1.5 px-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-semibold rounded-lg text-xs flex items-center space-x-1.5 transition-colors whitespace-nowrap">
+                            <i class="fa-solid fa-wand-magic-sparkles text-blue-400"></i>
+                            <span>Auto-Generate Study Summary</span>
+                        </button>
                     </div>
 
                     <!-- Chapter Hierarchy Container -->
@@ -682,26 +778,74 @@
         </button>
 
         <!-- Expandable AI Chat Drawer -->
-        <div id="aiChatDrawer" class="fixed bottom-24 right-4 md:right-6 w-[92vw] sm:w-80 md:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-40 flex flex-col h-[450px] md:h-[480px] hidden overflow-hidden">
-            <div class="p-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between">
-                <div class="flex items-center space-x-2.5">
-                    <span class="w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-sparkles"></i></span>
-                    <h4 class="text-sm font-bold text-white">MPW Study Copilot</h4>
+        <div id="aiChatDrawer" class="fixed bottom-24 right-4 md:right-6 w-[92vw] sm:w-84 md:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-40 flex flex-col h-[480px] md:h-[520px] hidden overflow-hidden backdrop-blur-xl">
+            <!-- Header with Engine status & Settings -->
+            <div class="p-3 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="w-7 h-7 bg-gradient-to-tr from-orange-500 to-amber-400 text-white rounded-lg flex items-center justify-center text-xs shadow"><i class="fa-solid fa-robot"></i></span>
+                    <div>
+                        <h4 class="text-xs md:text-sm font-bold text-white leading-tight">MPW AI Study Companion</h4>
+                        <span id="aiModelBadge" class="text-[9px] bg-slate-950 border border-slate-700 text-emerald-400 px-1.5 py-0.2 rounded font-mono">Gemini 1.5 Flash</span>
+                    </div>
                 </div>
-                <button onclick="window.appController.toggleAIAssistant()" class="text-slate-400 hover:text-white p-1">
-                    <i class="fa-solid fa-xmark"></i>
+                <div class="flex items-center space-x-1">
+                    <button onclick="window.appController.openGeminiSettings()" class="p-1.5 text-slate-400 hover:text-orange-400 rounded-lg" title="Gemini API Key Settings">
+                        <i class="fa-solid fa-gear text-xs"></i>
+                    </button>
+                    <button onclick="window.appController.clearAIChat()" class="p-1.5 text-slate-400 hover:text-red-400 rounded-lg" title="Clear Chat History">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                    <button onclick="window.appController.toggleAIAssistant()" class="p-1.5 text-slate-400 hover:text-white rounded-lg">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subject Context Banner -->
+            <div id="aiContextBanner" class="px-3 py-1.5 bg-slate-950/70 border-b border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                <span class="truncate">
+                    <i class="fa-solid fa-graduation-cap text-orange-400 mr-1"></i> Context: <strong id="aiContextSubjectName" class="text-slate-200">General Study</strong>
+                </span>
+                <span class="text-[10px] text-emerald-400 font-mono flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> Ready
+                </span>
+            </div>
+
+            <!-- Quick Action Prompt Pills -->
+            <div class="px-2.5 py-1.5 bg-slate-900 border-b border-slate-800/80 flex items-center space-x-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
+                <button onclick="window.appController.sendQuickAIPrompt('Explain this concept simply with a real-world analogy')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                    💡 Explain simply
+                </button>
+                <button onclick="window.appController.sendQuickAIPrompt('Summarize key points and formulas for quick revision')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                    ⚡ Key Points
+                </button>
+                <button onclick="window.appController.sendQuickAIPrompt('Generate 5 probable viva / exam questions with model answers')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                    📝 5 Viva Qs
+                </button>
+                <button onclick="window.appController.sendQuickAIPrompt('Create a concise question and answer flashcard for this topic')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                    🃏 Make Flashcard
+                </button>
+                <button onclick="window.appController.sendQuickAIPrompt('Explain time and space complexity with Big-O breakdown')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                    💻 Complexity
                 </button>
             </div>
-            <div id="aiChatMessages" class="flex-1 p-3 overflow-y-auto space-y-3">
-                <div class="bg-slate-800 text-slate-200 border border-slate-700 rounded-2xl rounded-tl-none px-4 py-2.5 text-sm max-w-[85%] shadow">
+
+            <!-- Messages Area -->
+            <div id="aiChatMessages" class="flex-1 p-3 overflow-y-auto space-y-3 text-xs md:text-sm">
+                <div class="bg-slate-800 text-slate-200 border border-slate-700 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs md:text-sm max-w-[85%] shadow">
                     <p class="font-bold text-orange-400 text-xs mb-1">🤖 MPW Assistant</p>
-                    Hello Athul! I'm synced with your subjects. Highlight any definition to generate flashcards or practice tests!
+                    Hello Athul! I'm your 24/7 academic companion powered by Google Gemini. Ask me to explain concepts, summarize notes, solve algorithms, or generate flashcards!
                 </div>
             </div>
-            <div class="p-3 bg-slate-800/80 border-t border-slate-700 flex items-center space-x-2">
-                <input type="text" id="aiChatInput" placeholder="Ask questions on Stacks, Trees, or Math..." onkeydown="if(event.key==='Enter') window.appController.sendAIMessage()"
+
+            <!-- Input Bar with Voice Mic -->
+            <div class="p-2.5 bg-slate-800/90 border-t border-slate-700 flex items-center space-x-2">
+                <button id="aiVoiceBtn" onclick="window.appController.toggleAIMic()" class="p-2 text-slate-400 hover:text-orange-400 rounded-xl bg-slate-900 border border-slate-700" title="Voice Input (Speech-to-Text)">
+                    <i class="fa-solid fa-microphone text-xs"></i>
+                </button>
+                <input type="text" id="aiChatInput" placeholder="Ask questions on Stacks, Trees, Math, or Science..." onkeydown="if(event.key==='Enter') window.appController.sendAIMessage()"
                     class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
-                <button onclick="window.appController.sendAIMessage()" class="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs transition-colors">
+                <button onclick="window.appController.sendAIMessage()" class="p-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs transition-colors shadow">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -753,8 +897,8 @@
                     <button onclick="window.appController.createFlashcardFromSelection()" class="px-2.5 py-1 bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white rounded-lg font-semibold transition-colors">
                         <i class="fa-solid fa-layer-group mr-1"></i> Make Flashcard
                     </button>
-                    <button onclick="window.appController.generateQuizFromHighlights()" class="px-2.5 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg font-semibold transition-colors">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Generate Quiz
+                    <button onclick="window.appController.generateSummaryFromHighlights()" class="px-2.5 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg font-semibold transition-colors">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Make Revision Summary
                     </button>
                 </div>
             </div>
@@ -856,6 +1000,18 @@
 
                 <!-- Flashcard 3D Studio Workspace -->
                 <div id="flashcardWorkspace" class="flex-1 flex flex-col items-center justify-center p-4 bg-slate-950 hidden">
+                    <!-- Deck Mastery Progress Bar -->
+                    <div class="w-full max-w-md mb-3">
+                        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                            <span>Deck Mastery Progress:</span>
+                            <span id="flashcardMasteryText" class="font-bold text-orange-400">0% Mastered</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="flashcardMasteryBar" class="h-full bg-gradient-to-r from-orange-500 to-emerald-400 transition-all duration-300" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard 3D Card -->
                     <div class="w-full max-w-md perspective-1000">
                         <div id="flashcardInner" onclick="window.whiteboardStudio.flipCard()"
                             class="w-full h-64 md:h-72 bg-gradient-to-tr from-slate-900 to-slate-800 border-2 border-orange-500/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl cursor-pointer transform-style-3d transition-transform duration-500 relative">
@@ -868,17 +1024,33 @@
                                 <p id="cardBackText" class="text-sm md:text-base text-orange-400 font-medium mt-3">Back Answer</p>
                             </div>
                             <div class="text-center text-[10px] text-slate-500 font-semibold">
-                                Spaced Repetition (Min-Heap Scheduled)
+                                Spaced Repetition (Leitner Box Active Recall)
                             </div>
                         </div>
                     </div>
 
+                    <!-- Leitner Box 4 Confidence Rating Buttons -->
+                    <div class="grid grid-cols-4 gap-2 w-full max-w-md mt-4">
+                        <button onclick="window.whiteboardStudio.rateCard('again')" class="py-2 bg-red-500/15 hover:bg-red-500/30 border border-red-500/40 text-red-300 rounded-xl text-xs font-bold transition-colors" title="Review again soon">
+                            ❌ Again
+                        </button>
+                        <button onclick="window.whiteboardStudio.rateCard('hard')" class="py-2 bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-bold transition-colors" title="Hard to recall">
+                            ⚠️ Hard
+                        </button>
+                        <button onclick="window.whiteboardStudio.rateCard('good')" class="py-2 bg-blue-500/15 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 rounded-xl text-xs font-bold transition-colors" title="Good recall">
+                            👍 Good
+                        </button>
+                        <button onclick="window.whiteboardStudio.rateCard('easy')" class="py-2 bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 rounded-xl text-xs font-bold transition-colors" title="Instant recall">
+                            🌟 Easy
+                        </button>
+                    </div>
+
                     <!-- Flashcard Navigation Buttons -->
-                    <div class="flex items-center space-x-3 mt-5">
+                    <div class="flex items-center space-x-3 mt-4">
                         <button onclick="window.whiteboardStudio.prevCard()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl shadow">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
-                        <button onclick="window.whiteboardStudio.flipCard()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow">
+                        <button onclick="window.whiteboardStudio.flipCard()" class="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow">
                             Flip Card
                         </button>
                         <button onclick="window.whiteboardStudio.nextCard()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl shadow">
@@ -1022,15 +1194,45 @@
         </div>
     </div>
 
-    <!-- LAB PLAYGROUND MODAL -->
-    <div id="labPlaygroundModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 md:p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col h-[80vh]">
+    <!-- CODE & FORMULA REFERENCE VAULT MODAL (100% Practical - No Tests!) -->
+    <div id="codeVaultModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col h-[82vh]">
             <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
-                <h3 class="text-sm md:text-base font-bold text-white flex items-center"><i class="fa-solid fa-terminal text-teal-400 mr-2"></i> Lab Manual & Viva Code Vault</h3>
-                <button onclick="document.getElementById('labPlaygroundModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center space-x-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center text-sm"><i class="fa-solid fa-code"></i></span>
+                    <div>
+                        <h3 class="text-sm md:text-base font-bold text-white">Code & Formula Reference Vault</h3>
+                        <p class="text-[11px] text-slate-400">Save and reference syntax, algorithms & mathematical formulas</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('codeVaultModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <textarea id="playgroundCodeInput" class="flex-1 bg-slate-950 font-mono text-xs text-emerald-400 p-3 md:p-4 rounded-xl border border-slate-800 resize-none focus:outline-none">
-// C++ / Python Inorder Traversal for Lab Viva
+
+            <!-- Language / Formula Type Selector Bar -->
+            <div class="flex items-center justify-between mb-3 text-xs">
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400 font-medium">Category:</span>
+                    <select id="codeVaultCategorySelect" onchange="window.appController.handleCodeVaultPreset(this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none">
+                        <option value="cpp">C++ (Binary Trees & STL)</option>
+                        <option value="python">Python (DSA & Graph BFS)</option>
+                        <option value="java">Java (OOP & Collections)</option>
+                        <option value="math">Mathematics (Calculus & Graph Formulas)</option>
+                        <option value="sql">SQL & Database Schemas</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="window.appController.copyCodeVaultSnippet()" class="py-1 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors">
+                        <i class="fa-regular fa-copy text-orange-400"></i>
+                        <span>Copy</span>
+                    </button>
+                    <button onclick="window.appController.saveSnippetToCurrentUnit()" class="py-1 px-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Save to Unit</span>
+                    </button>
+                </div>
+            </div>
+
+            <textarea id="codeVaultInput" class="flex-1 bg-slate-950 font-mono text-xs text-emerald-400 p-3 md:p-4 rounded-xl border border-slate-800 resize-none focus:outline-none leading-relaxed">// C++ Binary Tree Traversal Reference
 #include <iostream>
 using namespace std;
 
@@ -1048,26 +1250,157 @@ void inorder(Node* root) {
     inorder(root->right);
 }
 </textarea>
-            <div class="flex items-center justify-between mt-3">
-                <button onclick="window.appController.runPlaygroundCode()" class="py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl text-xs transition-colors">
-                    <i class="fa-solid fa-play mr-1"></i> Run Viva Simulation
-                </button>
-            </div>
-            <pre id="playgroundOutputConsole" class="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-400 h-24 overflow-y-auto"></pre>
         </div>
     </div>
 
-    <!-- PRACTICE QUIZ MODAL -->
-    <div id="quizModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 md:p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-2xl p-5 md:p-6 shadow-2xl max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-4">
-                <h3 class="text-sm md:text-base font-bold text-white flex items-center"><i class="fa-solid fa-wand-magic-sparkles text-orange-400 mr-2"></i> Generated Chapter Quiz</h3>
-                <button onclick="document.getElementById('quizModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <!-- UNIT REVISION SUMMARY & STUDY CHEAT SHEET MODAL -->
+    <div id="unitSummaryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl p-5 md:p-6 shadow-2xl max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                    <div>
+                        <h3 id="unitSummaryModalTitle" class="text-sm md:text-base font-bold text-white">Unit Revision Cheat Sheet</h3>
+                        <p class="text-[11px] text-slate-400">AI-synthesized condensed study summary & key definitions</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('unitSummaryModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div id="quizQuestionsContainer" class="flex-1 overflow-y-auto pr-1"></div>
-            <button onclick="window.appController.submitQuizAnswers()" class="w-full mt-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-colors">
-                Submit Answers & Check Score
-            </button>
+            <div id="unitSummaryContent" class="flex-1 overflow-y-auto p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs md:text-sm text-slate-200 leading-relaxed font-sans space-y-3">
+                <!-- Dynamic Summary Content -->
+            </div>
+            <div class="flex items-center justify-end space-x-3 mt-3 pt-3 border-t border-slate-800">
+                <button onclick="window.appController.copyUnitSummaryText()" class="py-2 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-colors">
+                    <i class="fa-regular fa-copy mr-1"></i> Copy Summary
+                </button>
+                <button onclick="window.appController.saveSummaryAsUnitNote()" class="py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors shadow">
+                    <i class="fa-solid fa-file-arrow-down mr-1"></i> Save as Unit File
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIVERSAL COMMAND PALETTE MODAL (Ctrl + K) -->
+    <div id="commandPaletteModal" class="fixed inset-0 z-50 flex items-start justify-center bg-black/80 backdrop-blur-md p-4 pt-16 md:pt-24 hidden" onclick="if(event.target===this) window.appController.toggleCommandPalette()">
+        <div class="cyber-card w-full max-w-xl rounded-2xl shadow-2xl border border-slate-700/80 overflow-hidden">
+            <div class="p-3 border-b border-slate-700/80 flex items-center space-x-3">
+                <i class="fa-solid fa-magnifying-glass text-orange-400 text-sm"></i>
+                <input type="text" id="commandPaletteInput" placeholder="Type a command or search subjects, units, notes..." oninput="window.appController.handleCommandPaletteSearch(this.value)"
+                    class="flex-1 bg-transparent text-white placeholder-slate-500 text-sm focus:outline-none">
+                <kbd class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-700">ESC</kbd>
+            </div>
+            <div id="commandPaletteResults" class="max-h-80 overflow-y-auto p-2 space-y-1">
+                <!-- Dynamically Populated Results -->
+            </div>
+        </div>
+    </div>
+
+    <!-- POMODORO STUDY TIMER & AMBIENT SOUNDSCAPE MODAL -->
+    <div id="pomodoroTimerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-white flex items-center"><i class="fa-solid fa-stopwatch text-orange-400 mr-2"></i> Pomodoro Focus Station</h3>
+                <button onclick="document.getElementById('pomodoroTimerModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Mode Tabs (Focus / Short Break / Long Break) -->
+            <div class="flex bg-slate-800 p-1 rounded-xl text-xs font-semibold mb-6">
+                <button id="pomoModeFocus" onclick="window.appController.setPomodoroMode('focus')" class="flex-1 py-1.5 rounded-lg bg-orange-500 text-white transition-colors">
+                    Focus (25m)
+                </button>
+                <button id="pomoModeShort" onclick="window.appController.setPomodoroMode('short')" class="flex-1 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    Short Break (5m)
+                </button>
+                <button id="pomoModeLong" onclick="window.appController.setPomodoroMode('long')" class="flex-1 py-1.5 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    Long Break (15m)
+                </button>
+            </div>
+
+            <!-- Timer Circle Display -->
+            <div class="my-6">
+                <div class="w-48 h-48 rounded-full border-4 border-orange-500/80 mx-auto flex flex-col items-center justify-center shadow-2xl shadow-orange-500/20 bg-slate-950">
+                    <span id="pomodoroTimeDisplay" class="text-4xl font-black text-white font-mono">25:00</span>
+                    <span id="pomodoroStateLabel" class="text-[11px] text-orange-400 uppercase font-semibold mt-1">Focus Time</span>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center justify-center space-x-3 mb-6">
+                <button id="pomoStartBtn" onclick="window.appController.togglePomodoroTimer()" class="py-2.5 px-6 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl text-sm shadow transition-all">
+                    <i class="fa-solid fa-play mr-1.5"></i> Start Focus
+                </button>
+                <button onclick="window.appController.resetPomodoroTimer()" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition-colors">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </button>
+            </div>
+
+            <!-- Ambient Focus Soundscapes (Web Audio Generated) -->
+            <div class="border-t border-slate-800 pt-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Ambient Study Soundscapes</p>
+                <div class="grid grid-cols-4 gap-2 text-xs">
+                    <button id="soundBtn_rain" onclick="window.appController.toggleAmbientSound('rain')" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 flex flex-col items-center space-y-1 transition-colors">
+                        <span class="text-base">🌧️</span>
+                        <span class="text-[10px]">Rain</span>
+                    </button>
+                    <button id="soundBtn_noise" onclick="window.appController.toggleAmbientSound('noise')" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 flex flex-col items-center space-y-1 transition-colors">
+                        <span class="text-base">🎧</span>
+                        <span class="text-[10px]">Focus Noise</span>
+                    </button>
+                    <button id="soundBtn_waves" onclick="window.appController.toggleAmbientSound('waves')" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 flex flex-col items-center space-y-1 transition-colors">
+                        <span class="text-base">🌊</span>
+                        <span class="text-[10px]">Ocean</span>
+                    </button>
+                    <button id="soundBtn_cafe" onclick="window.appController.toggleAmbientSound('cafe')" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 flex flex-col items-center space-y-1 transition-colors">
+                        <span class="text-base">☕</span>
+                        <span class="text-[10px]">Cafe</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GOOGLE GEMINI API SETTINGS MODAL -->
+    <div id="geminiSettingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center"><i class="fa-solid fa-key"></i></span>
+                    <h3 class="text-base font-bold text-white">Google Gemini API Settings</h3>
+                </div>
+                <button onclick="document.getElementById('geminiSettingsModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                Connect your free Google Gemini API key to activate live generative responses, homework explanations, and instant notes summaries.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Gemini API Key</label>
+                    <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..."
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-orange-500">
+                </div>
+
+                <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 text-xs text-slate-400 flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-slate-200">How to get a 100% Free Key:</p>
+                        <p class="mt-0.5">1. Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-orange-400 hover:underline">Google AI Studio (aistudio.google.com)</a></p>
+                        <p>2. Sign in and click <strong>Create API Key</strong> (No credit card needed!)</p>
+                    </div>
+                </div>
+
+                <div id="geminiTestResult" class="text-xs font-medium hidden"></div>
+
+                <div class="flex space-x-3">
+                    <button onclick="window.appController.testGeminiConnection()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-colors">
+                        Test Connection
+                    </button>
+                    <button onclick="window.appController.saveGeminiSettings()" class="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition-colors shadow">
+                        Save API Key
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

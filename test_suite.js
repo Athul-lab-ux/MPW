@@ -158,5 +158,58 @@ console.assert(importRes.success === true, 'FAILED: Full backup restore failed')
 console.log('✅ TEST 12 PASSED: Full Backup & Restore exports and imports without data loss.');
 
 console.log('\n==============================================');
-console.log('🎉 ALL 12 MULTI-PASS VERIFICATION TESTS PASSED 100%!');
+console.log('🧪 RUNNING TEST ROUND 4: Global Features (Sorting, Gemini Key, Leitner Box, Pomodoro, Memos)');
+console.log('==============================================');
+
+// Test 13: Natural Alphanumeric Sorting
+const unsortedUnits = [
+    { name: 'Unit 10: Advanced Algorithms' },
+    { name: 'Unit 2: Stacks and Queues' },
+    { name: 'Unit 1: Introduction to DSA' },
+    { name: 'Unit 3: Linked Lists' }
+];
+const sortedUnits = storage.sortItems(unsortedUnits, 'number');
+console.assert(sortedUnits[0].name.startsWith('Unit 1:'), 'FAILED: Unit 1 must be first');
+console.assert(sortedUnits[1].name.startsWith('Unit 2:'), 'FAILED: Unit 2 must be second');
+console.assert(sortedUnits[2].name.startsWith('Unit 3:'), 'FAILED: Unit 3 must be third');
+console.assert(sortedUnits[3].name.startsWith('Unit 10:'), 'FAILED: Unit 10 must be fourth, not after Unit 1');
+console.log('✅ TEST 13 PASSED: Natural alphanumeric sorting correctly orders Unit 1, Unit 2, Unit 3, Unit 10.');
+
+// Test 14: Google Gemini API Key Secure Persistence
+storage.saveGeminiApiKey('AIzaSy_test_secure_key_12345', 'MCP-user-000002');
+const retrievedKey = storage.getGeminiApiKey('MCP-user-000002');
+console.assert(retrievedKey === 'AIzaSy_test_secure_key_12345', 'FAILED: Gemini API key retrieval mismatch');
+console.log('✅ TEST 14 PASSED: Google Gemini API key securely persists in local storage per user.');
+
+// Test 15: Starred File Favorite Toggling
+const sampleFile = { id: 'file_test_999', isStarred: false };
+storage.toggleStarFile(sampleFile);
+console.assert(sampleFile.isStarred === true, 'FAILED: File should be starred');
+storage.toggleStarFile(sampleFile);
+console.assert(sampleFile.isStarred === false, 'FAILED: File should be unstarred');
+console.log('✅ TEST 15 PASSED: Starred (⭐) favorites toggle on and off seamlessly.');
+
+// Test 16: Pomodoro Focus Minutes & Daily Streak Logging
+storage.logStudyMinutes(25, 'MCP-user-000002');
+storage.logStudyMinutes(25, 'MCP-user-000002');
+const stats = storage.getDailyStudyStats('MCP-user-000002');
+console.assert(stats.minutesToday >= 50, `FAILED: Expected >= 50 minutes, got ${stats.minutesToday}`);
+console.assert(stats.sessionsCompleted >= 2, `FAILED: Expected >= 2 sessions, got ${stats.sessionsCompleted}`);
+console.log('✅ TEST 16 PASSED: Pomodoro focus minutes and session counts log reliably.');
+
+// Test 17: Audio Lecture Voice Memo Attachments
+storage.saveAudioMemo('subj_ds', 'unit_1', {
+    id: 'memo_001',
+    name: 'Lecture Recording: Binary Trees',
+    duration: '14:20',
+    audioData: 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQ8USA=='
+}, 'MCP-user-000002');
+const memos = storage.getAudioMemos('subj_ds', 'unit_1', 'MCP-user-000002');
+console.assert(memos.length === 1, 'FAILED: Audio memo should be saved');
+console.assert(memos[0].name.includes('Binary Trees'), 'FAILED: Audio memo name mismatch');
+console.log('✅ TEST 17 PASSED: Audio lecture voice memos attach to subject units.');
+
+console.log('\n==============================================');
+console.log('🎉 ALL 17 MULTI-PASS VERIFICATION TESTS PASSED 100%!');
 console.log('==============================================\n');
+

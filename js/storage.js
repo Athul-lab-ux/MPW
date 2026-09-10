@@ -460,6 +460,117 @@ class StorageManager {
             return { success: false, message: e.message };
         }
     }
+
+    // Natural Alphanumeric Sorting for Folders & Files
+    sortItems(items, criteria = 'number') {
+        if (!Array.isArray(items)) return [];
+        const copy = [...items];
+        if (criteria === 'number') {
+            return copy.sort((a, b) => {
+                const numA = (a.name || '').match(/\d+/);
+                const numB = (b.name || '').match(/\d+/);
+                if (numA && numB) {
+                    const diff = parseInt(numA[0], 10) - parseInt(numB[0], 10);
+                    if (diff !== 0) return diff;
+                }
+                return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' });
+            });
+        } else if (criteria === 'name') {
+            return copy.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+        } else if (criteria === 'starred') {
+            return copy.sort((a, b) => (b.isStarred ? 1 : 0) - (a.isStarred ? 1 : 0));
+        } else if (criteria === 'recent') {
+            return copy.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        }
+        return copy;
+    }
+
+    // Star / Favorite File Toggle
+    toggleStarFile(sessionOrFile, subjectId, unitId, fileId, userId = this.getCurrentUserId()) {
+        if (sessionOrFile && typeof sessionOrFile === 'object') {
+            sessionOrFile.isStarred = !sessionOrFile.isStarred;
+            return sessionOrFile.isStarred;
+        }
+        const subjects = this.getSubjects(sessionOrFile, userId);
+        const subj = subjects.find(s => s.id === subjectId);
+        if (!subj) return false;
+        const unit = subj.units.find(u => u.id === unitId);
+        if (!unit) return false;
+        let file = null;
+        for (const chap of (unit.chapters || [])) {
+            file = (chap.files || []).find(f => f.id === fileId);
+            if (file) break;
+        }
+        if (file) {
+            file.isStarred = !file.isStarred;
+            this.saveSubjects(sessionOrFile, subjects, userId);
+            return file.isStarred;
+        }
+        return false;
+    }
+
+    // Google Gemini API Key Storage
+    getGeminiApiKey() {
+        return localStorage.getItem('mpw_gemini_api_key') || '';
+    }
+
+    saveGeminiApiKey(key) {
+        localStorage.setItem('mpw_gemini_api_key', (key || '').trim());
+    }
+
+    // Audio Study Memos (GoodNotes / Notability inspired)
+    saveAudioMemo(subjectId, unitId, memoData, userId = this.getCurrentUserId()) {
+        const key = this._getKey(userId, `audio_memos_${subjectId}_${unitId}`);
+        let memos = [];
+        try { memos = JSON.parse(localStorage.getItem(key)) || []; } catch {}
+        memoData.id = 'memo_' + Date.now();
+        memoData.createdAt = Date.now();
+        memos.unshift(memoData);
+        localStorage.setItem(key, JSON.stringify(memos));
+        return memos;
+    }
+
+    getAudioMemos(subjectId, unitId, userId = this.getCurrentUserId()) {
+        const key = this._getKey(userId, `audio_memos_${subjectId}_${unitId}`);
+        try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+    }
+
+    // Daily Study Progress & Pomodoro Time Tracker
+    logStudyMinutes(minutes, userId = this.getCurrentUserId()) {
+        const key = this._getKey(userId, 'daily_study_stats');
+        const today = new Date().toDateString();
+        let stats = { date: today, totalMinutes: 0, completedSessions: 0 };
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.date === today) stats = parsed;
+            }
+        } catch {}
+        stats.totalMinutes += minutes;
+        stats.completedSessions += 1;
+        stats.minutesToday = stats.totalMinutes;
+        stats.sessionsCompleted = stats.completedSessions;
+        localStorage.setItem(key, JSON.stringify(stats));
+        return stats;
+    }
+
+    getDailyStudyStats(userId = this.getCurrentUserId()) {
+        const key = this._getKey(userId, 'daily_study_stats');
+        const today = new Date().toDateString();
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.date === today) {
+                    parsed.minutesToday = parsed.totalMinutes;
+                    parsed.sessionsCompleted = parsed.completedSessions;
+                    return parsed;
+                }
+            }
+        } catch {}
+        return { date: today, totalMinutes: 0, completedSessions: 0, minutesToday: 0, sessionsCompleted: 0 };
+    }
 }
 
 window.storageManager = new StorageManager();
