@@ -99,10 +99,10 @@ class AuthManager {
 
         const newUser = {
             userId,
-            name: name.trim(),
-            age: parseInt(age, 10),
+            name: (name || 'Student').trim(),
+            age: age ? parseInt(age, 10) : 18,
             email: normalizedEmail,
-            phone: phone.trim(),
+            phone: phone ? phone.trim() : '',
             address: address ? address.trim() : '',
             salt,
             passwordHash,

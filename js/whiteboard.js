@@ -438,6 +438,7 @@ class WhiteboardStudio {
     }
 
     renderFlashcard() {
+        if (typeof document === 'undefined') return;
         const card = this.flashcards[this.currentCardIndex];
         const cardFront = document.getElementById('cardFrontText');
         const cardBack = document.getElementById('cardBackText');
@@ -486,10 +487,24 @@ class WhiteboardStudio {
 
         card.confidence = rating; // 'again', 'hard', 'good', 'easy'
         card.lastReviewed = Date.now();
-        if (rating === 'easy') card.interval = (card.interval || 1) * 2;
-        else if (rating === 'again') card.interval = 1;
+        card.reviewsCount = (card.reviewsCount || 0) + 1;
 
-        window.storageManager.saveFlashcards(this.activeSubjectId, this.flashcards);
+        if (!card.leitnerBox) card.leitnerBox = 1;
+        if (rating === 'again') {
+            card.leitnerBox = 1;
+            card.interval = 1;
+        } else if (rating === 'hard') {
+            card.leitnerBox = Math.max(1, card.leitnerBox);
+            card.interval = Math.max(1, card.interval || 1);
+        } else if (rating === 'good') {
+            card.leitnerBox = Math.min(5, card.leitnerBox + 1);
+            card.interval = (card.interval || 1) * 2;
+        } else if (rating === 'easy') {
+            card.leitnerBox = Math.min(5, card.leitnerBox + 2);
+            card.interval = (card.interval || 1) * 4;
+        }
+
+        window.storageManager.saveFlashcards(this.activeSubjectId || 'general', this.flashcards);
         
         // Update mastery bar
         this.updateMasteryDisplay();
@@ -499,6 +514,7 @@ class WhiteboardStudio {
     }
 
     updateMasteryDisplay() {
+        if (typeof document === 'undefined') return;
         if (!this.flashcards || this.flashcards.length === 0) return;
         const mastered = this.flashcards.filter(c => c.confidence === 'good' || c.confidence === 'easy').length;
         const pct = Math.round((mastered / this.flashcards.length) * 100);

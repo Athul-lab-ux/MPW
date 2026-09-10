@@ -342,6 +342,19 @@ class StorageManager {
         localStorage.setItem(this._getKey(userId, `flashcards_${subjectId}`), JSON.stringify(cards));
     }
 
+    saveFlashcard(card, userId = this.getCurrentUserId()) {
+        const subjectId = card.subjectId || 'general';
+        const cards = this.getFlashcards(subjectId, userId);
+        const existingIdx = cards.findIndex(c => c.id === card.id);
+        if (existingIdx !== -1) {
+            cards[existingIdx] = card;
+        } else {
+            cards.push(card);
+        }
+        this.saveFlashcards(subjectId, cards, userId);
+        return cards;
+    }
+
     // Notes Scratchpad (Blank / Ruled)
     getNotes(subjectId, userId = this.getCurrentUserId()) {
         const raw = localStorage.getItem(this._getKey(userId, `notes_${subjectId}`));
