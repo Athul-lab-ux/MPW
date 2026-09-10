@@ -186,11 +186,32 @@ body {
 /* ==========================================
    CYBER-SECURE AUTH & HIGH-END VISUAL POLISH
    ========================================== */
+.auth-bg-ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.04);
+}
+
+.auth-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(30, 58, 138, 0.45) 0%, rgba(15, 23, 42, 0.8) 65%, rgba(10, 15, 30, 0.94) 100%),
+                linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.75) 50%, rgba(249, 115, 22, 0.15) 100%);
+    backdrop-filter: blur(10px) brightness(0.85);
+    -webkit-backdrop-filter: blur(10px) brightness(0.85);
+}
+
 .cyber-card {
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(249, 115, 22, 0.25);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(249, 115, 22, 0.12);
+    background: rgba(15, 23, 42, 0.84);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(249, 115, 22, 0.32);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(249, 115, 22, 0.14), 0 0 20px rgba(30, 58, 138, 0.25);
 }
 
 .glow-orange {

@@ -34,8 +34,13 @@
     <!-- ========================================== -->
     <!-- W1: STRONG CYBER-SECURE AUTHENTICATION PANEL -->
     <!-- ========================================== -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4">
-        <div class="cyber-card w-full max-w-md rounded-2xl p-6 md:p-8 shadow-2xl relative border border-orange-500/30">
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <!-- Aesthetic Study Ambient Wallpaper with 25-30% Blur & 3-Tier Visual Ambiance -->
+        <div class="auth-bg-ambient">
+            <div class="auth-bg-overlay"></div>
+        </div>
+
+        <div class="cyber-card w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 border border-orange-500/30 my-auto">
             <!-- Cyber Shield & Brand Header -->
             <div class="text-center mb-5">
                 <div class="relative w-16 h-16 bg-gradient-to-tr from-orange-500 to-amber-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-orange-500/30 mb-3 border border-white/20">
@@ -171,6 +176,14 @@
                     Register & Generate Permanent User ID
                 </button>
             </form>
+
+            <!-- Reset & Clean Start Option -->
+            <div class="mt-4 pt-3 border-t border-slate-800/80 text-center">
+                <button type="button" onclick="window.appController.resetAuthAndStorage()" class="text-[11px] text-slate-400 hover:text-orange-400 transition-colors inline-flex items-center space-x-1.5" title="Clear cached accounts & restart fresh">
+                    <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                    <span>Clear Saved Auth Data & Start Fresh</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -204,12 +217,17 @@
     <!-- School Onboarding Modal -->
     <div id="schoolOnboardingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
         <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
-            <div class="flex items-center space-x-3 mb-4">
-                <span class="p-3 bg-blue-500/20 text-blue-400 rounded-xl text-xl"><i class="fa-solid fa-graduation-cap"></i></span>
-                <div>
-                    <h3 class="text-lg font-bold text-white">School Academic Profile</h3>
-                    <p class="text-xs text-slate-400">Select your current standard and stream</p>
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <span class="p-3 bg-blue-500/20 text-blue-400 rounded-xl text-xl"><i class="fa-solid fa-graduation-cap"></i></span>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">School Academic Profile</h3>
+                        <p class="text-xs text-slate-400">Select your current standard and stream</p>
+                    </div>
                 </div>
+                <button type="button" onclick="window.appController.closeOnboardingModal('schoolOnboardingModal')" class="p-2 text-slate-400 hover:text-white rounded-lg transition-colors" title="Back to workspace">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <div class="space-y-4">
@@ -257,12 +275,17 @@
     <!-- College Onboarding Modal -->
     <div id="collegeOnboardingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
         <div class="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl">
-            <div class="flex items-center space-x-3 mb-4">
-                <span class="p-3 bg-orange-500/20 text-orange-400 rounded-xl text-xl"><i class="fa-solid fa-university"></i></span>
-                <div>
-                    <h3 class="text-lg font-bold text-white">College Academic Profile</h3>
-                    <p class="text-xs text-slate-400">Setup branch, batch years & synchronized semester</p>
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <span class="p-3 bg-orange-500/20 text-orange-400 rounded-xl text-xl"><i class="fa-solid fa-university"></i></span>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">College Academic Profile</h3>
+                        <p class="text-xs text-slate-400">Setup branch, batch years & synchronized semester</p>
+                    </div>
                 </div>
+                <button type="button" onclick="window.appController.closeOnboardingModal('collegeOnboardingModal')" class="p-2 text-slate-400 hover:text-white rounded-lg transition-colors" title="Back to workspace">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <div class="space-y-4">
@@ -323,7 +346,10 @@
 
     <!-- Integrated 5-Year Course Modal -->
     <div id="integratedCourseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
-        <div class="bg-slate-900 border border-amber-500/80 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center">
+        <div class="bg-slate-900 border border-amber-500/80 w-full max-w-md rounded-2xl p-6 shadow-2xl text-center relative">
+            <button type="button" onclick="document.getElementById('integratedCourseModal').classList.add('hidden')" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg transition-colors" title="Back">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
             <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
                 <i class="fa-solid fa-graduation-cap"></i>
             </div>

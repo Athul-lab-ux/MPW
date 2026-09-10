@@ -22,6 +22,14 @@ class AuthManager {
     }
 
     initDatabase() {
+        // Guarantee clean start for fresh deployment cycle
+        if (!localStorage.getItem('mpw_v3_session_cleared')) {
+            localStorage.removeItem(this.STORAGE_SESSION_KEY);
+            localStorage.removeItem(this.STORAGE_USERS_KEY);
+            localStorage.removeItem(this.STORAGE_COUNTER_KEY);
+            localStorage.setItem('mpw_v3_session_cleared', 'true');
+        }
+
         if (!localStorage.getItem(this.STORAGE_COUNTER_KEY)) {
             localStorage.setItem(this.STORAGE_COUNTER_KEY, '1');
         }
@@ -48,6 +56,15 @@ class AuthManager {
             localStorage.setItem(this.STORAGE_COUNTER_KEY, '2');
             // Deliberately do NOT set STORAGE_SESSION_KEY so app always starts on the Authentication Panel!
         }
+    }
+
+    clearAllAuthData() {
+        localStorage.removeItem(this.STORAGE_SESSION_KEY);
+        localStorage.removeItem(this.STORAGE_USERS_KEY);
+        localStorage.removeItem(this.STORAGE_COUNTER_KEY);
+        localStorage.removeItem(this.FAILED_ATTEMPTS_KEY);
+        localStorage.removeItem(this.LOCKOUT_KEY);
+        this.initDatabase();
     }
 
     getUsers() {

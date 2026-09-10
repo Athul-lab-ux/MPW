@@ -134,7 +134,8 @@ class AppController {
             authModal.classList.add('hidden');
             mainApp.classList.remove('hidden');
             this.updateHeaderUserProfile(user);
-            this.handleSessionLaunch(this.currentSession);
+            // User requirement: Main interface shows directly after authentication!
+            this.loadWorkspace(this.currentSession);
         }
     }
 
@@ -297,17 +298,31 @@ class AppController {
     }
 
     handleSessionLaunch(sessionName) {
-        // Check 1-time onboarding rule
-        const hasSetup = window.storageManager.hasCompletedOnboarding(sessionName);
+        // Always load workspace first so user sees the interface
+        this.loadWorkspace(sessionName);
 
+        // Only prompt if user specifically clicked a session that has not completed onboarding
+        const hasSetup = window.storageManager.hasCompletedOnboarding(sessionName);
         if (!hasSetup) {
             if (sessionName === 'college') {
-                document.getElementById('collegeOnboardingModal').classList.remove('hidden');
+                document.getElementById('collegeOnboardingModal')?.classList.remove('hidden');
             } else if (sessionName === 'school') {
-                document.getElementById('schoolOnboardingModal').classList.remove('hidden');
+                document.getElementById('schoolOnboardingModal')?.classList.remove('hidden');
             }
-        } else {
-            this.loadWorkspace(sessionName);
+        }
+    }
+
+    closeOnboardingModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.add('hidden');
+        this.showToast('ℹ️ Workspace ready. You can configure session profile anytime by clicking the session tab.');
+    }
+
+    resetAuthAndStorage() {
+        if (confirm('Are you sure you want to clear all authentication data and start completely fresh from scratch?')) {
+            window.authManager.clearAllAuthData();
+            this.showToast('🧹 Authentication data cleared! Starting fresh.');
+            setTimeout(() => window.location.reload(), 400);
         }
     }
 
